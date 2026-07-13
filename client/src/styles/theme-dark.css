@@ -1,0 +1,73 @@
+:root[data-theme='dark'] {
+  --color-bg: #1e1e1e;
+  --color-surface: #2a2a2a;
+  --color-surface-alt: #333333;
+  --color-surface-sunken: #242424;
+
+  --color-text: #f0f0f0;
+  --color-text-muted: #a8a8a8;
+  --color-text-faint: #7a7a7a;
+
+  --color-border: #404040;
+  --color-border-strong: #525252;
+
+  --color-primary: #f0385f;
+  --color-primary-hover: #fb5a7e;
+  --color-primary-text: #ffffff;
+  --color-primary-soft: #3a1420;
+  --color-primary-soft-text: #ff9fb5;
+
+  --color-info: #3b82f6;
+  --color-info-hover: #60a5fa;
+  --color-info-text: #1a1a1a;
+  --color-info-soft: #1e2e4e;
+  --color-info-soft-text: #93c1fb;
+
+  --color-success: #34d399;
+  --color-success-soft: #14311f;
+  --color-success-text: #6ee7a6;
+
+  --color-warning: #f0b23a;
+  --color-warning-soft: #34260f;
+  --color-warning-text: #f6cb70;
+
+  --color-danger: #f27171;
+  --color-danger-soft: #34191a;
+  --color-danger-text: #f6a5a5;
+
+  --color-focus-ring: rgba(240, 56, 95, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg: #1e1e1e;
+    --color-surface: #2a2a2a;
+    --color-surface-alt: #333333;
+    --color-surface-sunken: #242424;
+    --color-text: #f0f0f0;
+    --color-text-muted: #a8a8a8;
+    --color-text-faint: #7a7a7a;
+    --color-border: #404040;
+    --color-border-strong: #525252;
+    --color-primary: #f0385f;
+    --color-primary-hover: #fb5a7e;
+    --color-primary-text: #ffffff;
+    --color-primary-soft: #3a1420;
+    --color-primary-soft-text: #ff9fb5;
+    --color-info: #3b82f6;
+    --color-info-hover: #60a5fa;
+    --color-info-text: #1a1a1a;
+    --color-info-soft: #1e2e4e;
+    --color-info-soft-text: #93c1fb;
+    --color-success: #34d399;
+    --color-success-soft: #14311f;
+    --color-success-text: #6ee7a6;
+    --color-warning: #f0b23a;
+    --color-warning-soft: #34260f;
+    --color-warning-text: #f6cb70;
+    --color-danger: #f27171;
+    --color-danger-soft: #34191a;
+    --color-danger-text: #f6a5a5;
+    --color-focus-ring: rgba(240, 56, 95, 0.4);
+  }
+}

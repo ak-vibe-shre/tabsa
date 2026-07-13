@@ -1,0 +1,3 @@
+tabsa.in, www.tabsa.in {
+	reverse_proxy app:4000
+}

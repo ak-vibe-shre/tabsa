@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tabsa — Run any store, simplified</title>
+    <link rel="icon" type="image/png" href="/assets/logo-mark.png" />
+    <meta
+      name="description"
+      content="Tabsa brings orders, billing, products, inventory, and real-time analytics together for restaurants, toy stores, electronics shops, and retail — in one modern platform."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="announce">
+      <svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/></svg> Tabsa is live — bring your whole business online in minutes. <a href="/app/login">Get started free →</a>
+    </div>
+
+    <nav class="nav">
+      <div class="wrap nav-inner">
+        <a href="/" class="brand">
+          <img class="brand-logo" src="/assets/logo-lockup.png" alt="Tabsa" />
+        </a>
+        <div class="nav-links">
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#ai-insights">AI</a>
+          <a href="#success-stories">Success stories</a>
+          <a href="#pricing">Pricing</a>
+          <a href="/app/login" class="btn btn-primary">Get Free Demo</a>
+        </div>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <div class="hero-doodles" aria-hidden="true">
+        <span class="doodle d1"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/><path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/><path d="m2.1 21.8 6.4-6.3"/><path d="m19 5-7 7"/></svg></span>
+        <span class="doodle d2"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14-1 1"/><path d="m13.75 18.25-1.25 1.42"/><path d="M17.775 5.654a15.68 15.68 0 0 0-12.121 12.12"/><path d="M18.8 9.3a1 1 0 0 0 2.1 7.7"/><path d="M21.964 20.732a1 1 0 0 1-1.232 1.232l-18-5a1 1 0 0 1-.695-1.232A19.68 19.68 0 0 1 15.732 2.037a1 1 0 0 1 1.232.695z"/></svg></span>
+        <span class="doodle d3"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg></span>
+        <span class="doodle d4"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V7"/><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"/><path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z"/></svg></span>
+        <span class="doodle d5"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z"/></svg></span>
+        <span class="doodle d6"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21h10"/><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M11.38 12a2.4 2.4 0 0 1-.4-4.77 2.4 2.4 0 0 1 3.2-2.77 2.4 2.4 0 0 1 3.47-.63 2.4 2.4 0 0 1 3.37 3.37 2.4 2.4 0 0 1-1.1 3.7 2.51 2.51 0 0 1 .03 1.1"/><path d="m13 12 4-4"/><path d="M10.9 7.25A3.99 3.99 0 0 0 4 10c0 .73.2 1.41.54 2"/></svg></span>
+        <span class="doodle d7"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.37 11.223 8.372-6.777a2 2 0 0 1 2.516 0l8.371 6.777"/><path d="M21 15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-5.25"/><path d="M3 15a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h9"/><path d="m6.67 15 6.13 4.6a2 2 0 0 0 2.8-.4l3.15-4.2"/><rect width="20" height="4" x="2" y="11" rx="1"/></svg></span>
+      </div>
+      <div class="wrap">
+        <div class="hero-copy">
+          <span class="eyebrow"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg> All-in-one software for restaurants &amp; retail</span>
+          <h1>Run your store, <span class="accent">simplified</span></h1>
+          <p class="lead">
+            Tabsa brings orders, billing, products, inventory, and real-time analytics together —
+            for restaurants, toy stores, electronics shops, and retail — so your team can focus on
+            customers, not spreadsheets.
+          </p>
+          <div class="hero-actions">
+            <a href="/app/login" class="btn btn-primary btn-lg">Get Free Demo</a>
+            <a href="#how-it-works" class="btn btn-secondary btn-lg">See how it works</a>
+          </div>
+          <div class="hero-tags">
+            <span><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/><path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/><path d="m2.1 21.8 6.4-6.3"/><path d="m19 5-7 7"/></svg> Table Management</span>
+            <span><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg> Live Analytics</span>
+            <span><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/></svg> Stock Alerts</span>
+            <span><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg> Dark Mode</span>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="hero-browser">
+            <div class="browser-bar">
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+            </div>
+            <div class="hero-browser-body">
+              <div class="hero-browser-topline">
+                <span>Orders &amp; Billing</span>
+                <span class="device-header-dot"></span>
+              </div>
+              <div class="hero-browser-search"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg> Search tables…</div>
+              <div class="hero-browser-order">
+                <div class="hero-browser-order-item">
+                  <img src="/assets/food-pizza.jpg" alt="Margherita pizza" loading="lazy" />
+                  <div class="hero-browser-order-info">
+                    <span class="hero-browser-order-name">Margherita Pizza</span>
+                    <span class="hero-browser-order-qty">x2</span>
+                  </div>
+                  <span class="hero-browser-order-price">₹320</span>
+                </div>
+                <div class="hero-browser-order-item">
+                  <img src="/assets/food-salad-bowl.jpg" alt="Fresh buddha bowl" loading="lazy" />
+                  <div class="hero-browser-order-info">
+                    <span class="hero-browser-order-name">Buddha Bowl</span>
+                    <span class="hero-browser-order-qty">x1</span>
+                  </div>
+                  <span class="hero-browser-order-price">₹280</span>
+                </div>
+                <div class="hero-browser-order-item">
+                  <img src="/assets/food-pancakes.jpg" alt="Maple pancakes" loading="lazy" />
+                  <div class="hero-browser-order-info">
+                    <span class="hero-browser-order-name">Maple Pancakes</span>
+                    <span class="hero-browser-order-qty">x1</span>
+                  </div>
+                  <span class="hero-browser-order-price">₹180</span>
+                </div>
+              </div>
+              <div class="hero-browser-fab">+ New order</div>
+            </div>
+            <div class="ai-bubble" aria-hidden="true">
+              <span class="ai-bubble-ring"></span>
+              <span class="ai-bubble-face"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></span>
+            </div>
+          </div>
+
+          <div class="insight-card">
+            <div class="insight-card-header"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg> Live Insights</div>
+            <div class="insight-card-body">
+              <div class="insight-stat">
+                <span class="insight-label">Today's Sales</span>
+                <span class="insight-value">₹8,234</span>
+              </div>
+              <div class="insight-stat">
+                <span class="insight-label">Today's Orders</span>
+                <span class="insight-value">42</span>
+              </div>
+            </div>
+            <a href="/app/login" class="insight-cta">View Dashboard →</a>
+          </div>
+
+          <div class="badge-float"><span class="dot"></span> Table T4 · Order billed</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="section-tight">
+      <div class="wrap">
+        <p style="text-align: center; color: var(--text-muted); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.02em; text-transform: uppercase; margin-bottom: 24px;">
+          Built for every kind of business
+        </p>
+        <div class="venue-strip">
+          <div class="venue-track">
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/><path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/><path d="m2.1 21.8 6.4-6.3"/><path d="m19 5-7 7"/></svg> Fine Dining</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg> Cafés</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/><path d="M6 17h12"/></svg> Cloud Kitchens</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.37 11.223 8.372-6.777a2 2 0 0 1 2.516 0l8.371 6.777"/><path d="M21 15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-5.25"/><path d="M3 15a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h9"/><path d="m6.67 15 6.13 4.6a2 2 0 0 0 2.8-.4l3.15-4.2"/><rect width="20" height="4" x="2" y="11" rx="1"/></svg> QSR &amp; Fast Casual</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12 4.207 4.207A.707.707 0 0 1 4.707 3h14.586a.707.707 0 0 1 .5 1.207z"/><path d="M12 12v10"/><path d="M7 22h10"/></svg> Bars &amp; Lounges</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.2 18H4.774a1.5 1.5 0 0 1-1.352-.97 11 11 0 0 1 .132-6.487"/><path d="M18 10.2V4.774a1.5 1.5 0 0 0-.97-1.352 11 11 0 0 0-6.486.132"/><path d="M18 5a4 3 0 0 1 4 3 2 2 0 0 1-2 2 10 10 0 0 0-5.139 1.42"/><path d="M5 18a3 4 0 0 0 3 4 2 2 0 0 0 2-2 10 10 0 0 1 1.42-5.14"/><path d="M8.709 2.554a10 10 0 0 0-6.155 6.155 1.5 1.5 0 0 0 .676 1.626l9.807 5.42a2 2 0 0 0 2.718-2.718l-5.42-9.807a1.5 1.5 0 0 0-1.626-.676"/></svg> Bakeries</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 21h10"/><path d="M19.5 12 22 6"/><path d="M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62"/><path d="M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62"/><path d="M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.74 1.62"/></svg> Food Courts</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/></svg> Catering</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg> Toy Stores</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg> Electronics Stores</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> General Retail</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/><path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/><path d="m2.1 21.8 6.4-6.3"/><path d="m19 5-7 7"/></svg> Fine Dining</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg> Cafés</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/><path d="M6 17h12"/></svg> Cloud Kitchens</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.37 11.223 8.372-6.777a2 2 0 0 1 2.516 0l8.371 6.777"/><path d="M21 15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-5.25"/><path d="M3 15a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h9"/><path d="m6.67 15 6.13 4.6a2 2 0 0 0 2.8-.4l3.15-4.2"/><rect width="20" height="4" x="2" y="11" rx="1"/></svg> QSR &amp; Fast Casual</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12 4.207 4.207A.707.707 0 0 1 4.707 3h14.586a.707.707 0 0 1 .5 1.207z"/><path d="M12 12v10"/><path d="M7 22h10"/></svg> Bars &amp; Lounges</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.2 18H4.774a1.5 1.5 0 0 1-1.352-.97 11 11 0 0 1 .132-6.487"/><path d="M18 10.2V4.774a1.5 1.5 0 0 0-.97-1.352 11 11 0 0 0-6.486.132"/><path d="M18 5a4 3 0 0 1 4 3 2 2 0 0 1-2 2 10 10 0 0 0-5.139 1.42"/><path d="M5 18a3 4 0 0 0 3 4 2 2 0 0 0 2-2 10 10 0 0 1 1.42-5.14"/><path d="M8.709 2.554a10 10 0 0 0-6.155 6.155 1.5 1.5 0 0 0 .676 1.626l9.807 5.42a2 2 0 0 0 2.718-2.718l-5.42-9.807a1.5 1.5 0 0 0-1.626-.676"/></svg> Bakeries</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 21h10"/><path d="M19.5 12 22 6"/><path d="M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62"/><path d="M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62"/><path d="M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.74 1.62"/></svg> Food Courts</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/></svg> Catering</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg> Toy Stores</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg> Electronics Stores</span>
+            <span class="venue-pill"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> General Retail</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="tint">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">Start using in minutes</span>
+          <h2>How Tabsa works</h2>
+          <p>Getting started is simple — set up once, run your floor every day after.</p>
+        </div>
+        <div class="how-visual reveal">
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+            </div>
+            <img src="/assets/feature-orders.png" alt="Tabsa table grid in use" />
+          </div>
+        </div>
+        <div class="steps reveal">
+          <div class="step">
+            <div class="step-num">1</div>
+            <h3>Set up your catalog</h3>
+            <p>Add categories, products, prices, and photos in a few taps.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <h3>Add your tables or counters</h3>
+            <p>Map out your floor so staff know what's available at a glance.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <h3>Start taking orders</h3>
+            <p>Tap a table or counter, build the order, and send it straight to billing.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <h3>Track sales live</h3>
+            <p>Watch revenue, top items, and stock levels update in real time.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">Powerful software for any business</span>
+          <h2>Key features of Tabsa</h2>
+          <p>One connected platform instead of four disconnected tools.</p>
+        </div>
+        <div class="tabs-row reveal">
+          <button class="tab-btn active" data-tab="orders">Orders &amp; Billing</button>
+          <button class="tab-btn" data-tab="menu">Product Management</button>
+          <button class="tab-btn" data-tab="inventory">Inventory</button>
+          <button class="tab-btn" data-tab="analytics">Live Analytics</button>
+        </div>
+
+        <div class="tab-panel active" data-panel="orders">
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+            </div>
+            <img src="/assets/feature-orders.png" alt="Orders and billing screen" />
+          </div>
+          <div class="tab-copy">
+            <h3>Tap-to-order table management</h3>
+            <p>See every table's status at a glance and jump straight into building an order.</p>
+            <ul class="checklist">
+              <li>Color-coded available, occupied, billed &amp; locked states</li>
+              <li>Instant bill generation with cash, card, or UPI</li>
+              <li>Lock a table for a reservation, with a note</li>
+            </ul>
+          </div>
+        </div>
+        <div class="tab-panel" data-panel="menu">
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+            </div>
+            <img src="/assets/feature-menu.png" alt="Menu management screen" />
+          </div>
+          <div class="tab-copy">
+            <h3>Organize your catalog your way</h3>
+            <p>Group products into categories, toggle availability, and keep pricing current.</p>
+            <ul class="checklist">
+              <li>Photos or smart default icons for every product</li>
+              <li>One-tap availability toggles for sold-out items</li>
+              <li>Per-item tax rates, plus custom fields for your business type</li>
+            </ul>
+          </div>
+        </div>
+        <div class="tab-panel" data-panel="inventory">
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+            </div>
+            <img src="/assets/feature-inventory.png" alt="Inventory tracking screen" />
+          </div>
+          <div class="tab-copy">
+            <h3>Never run out mid-service</h3>
+            <p>Track stock levels against thresholds and log every movement.</p>
+            <ul class="checklist">
+              <li>Automatic low-stock alerts on the dashboard</li>
+              <li>Stock-in / stock-out history per ingredient</li>
+              <li>Quick "adjust stock" from any device</li>
+            </ul>
+          </div>
+        </div>
+        <div class="tab-panel" data-panel="analytics">
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+            </div>
+            <img src="/assets/hero-dashboard.png" alt="Live analytics dashboard" />
+          </div>
+          <div class="tab-copy">
+            <h3>Know your numbers in real time</h3>
+            <p>Sales trends, top-selling items, and revenue by category — always current.</p>
+            <ul class="checklist">
+              <li>Today, 7-day, and 30-day views</li>
+              <li>Top items and category revenue charts</li>
+              <li>Low-stock summary alongside sales</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ai-insights" class="ai-section">
+      <div class="ai-glow" aria-hidden="true"></div>
+      <div class="wrap ai-wrap reveal">
+        <div class="ai-copy">
+          <span class="eyebrow ai-eyebrow">
+            <svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+            Powered by AI
+          </span>
+          <h2>Ask Tabsa anything about your business</h2>
+          <p class="lead">
+            No dashboards to dig through. Just ask in plain English and get an instant, accurate
+            answer pulled straight from your live sales, stock, and table data.
+          </p>
+          <ul class="checklist">
+            <li>Natural-language questions, answered in seconds</li>
+            <li>Reads your real order, stock, and table data — nothing pre-scripted</li>
+            <li>Built into the dashboard, no extra app to open</li>
+          </ul>
+          <a href="/app/login" class="btn btn-primary btn-lg">Try it free</a>
+        </div>
+
+        <div class="ai-visual">
+          <svg class="ai-watermark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+          <div class="ai-chat-mock">
+            <div class="ai-chat-header">
+              <span class="ai-chat-avatar">
+                <svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+              </span>
+              <span>Tabsa Assistant</span>
+              <span class="ai-chat-status"><span class="dot"></span> Online</span>
+            </div>
+            <div class="ai-chat-body">
+              <div class="ai-bubble-row user">
+                <div class="ai-chat-bubble">What's my best-selling item this week?</div>
+              </div>
+              <div class="ai-bubble-row assistant">
+                <span class="ai-chat-avatar sm">
+                  <svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                </span>
+                <div class="ai-chat-bubble">Butter Chicken — 42 orders, ₹14,280 in revenue so far this week.</div>
+              </div>
+              <div class="ai-bubble-row user">
+                <div class="ai-chat-bubble">Any tables that need attention right now?</div>
+              </div>
+              <div class="ai-bubble-row assistant">
+                <span class="ai-chat-avatar sm">
+                  <svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                </span>
+                <div class="ai-chat-bubble">Table T3 has been occupied 45 min with no new items — worth a check-in.</div>
+              </div>
+            </div>
+            <div class="ai-chat-input">Ask about sales, stock, or tables…</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tint">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">More advanced features</span>
+          <h2>Everything else you need to run the floor</h2>
+          <p>Small details that add up to a faster, calmer service.</p>
+        </div>
+        <div class="feature-grid reveal">
+          <div class="feature-card">
+            <div class="feature-icon"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg></div>
+            <h3>Dark mode</h3>
+            <p>Easy on the eyes during closing shift, switches instantly.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <h3>Table &amp; counter locking</h3>
+            <p>Block a table or counter for a reservation or cleaning, with a note.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V7"/><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"/><path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z"/></svg></div>
+            <h3>Order history</h3>
+            <p>Search and review every past order, billed or cancelled.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg></div>
+            <h3>Configurable modules</h3>
+            <p>Show or hide Inventory and Dashboard from the sidebar.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">Perfect for your business</span>
+          <h2>Who can use Tabsa?</h2>
+          <p>From restaurants to retail counters, Tabsa adapts to how you sell.</p>
+        </div>
+        <div class="persona-grid reveal">
+          <div class="persona-card">
+            <div class="icon"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/><path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/><path d="m2.1 21.8 6.4-6.3"/><path d="m19 5-7 7"/></svg></div>
+            <div>
+              <h3>Fine Dining</h3>
+              <p>Manage reservations, table turns, and detailed billing with ease.</p>
+            </div>
+          </div>
+          <div class="persona-card">
+            <div class="icon"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg></div>
+            <div>
+              <h3>Cafés &amp; Bakeries</h3>
+              <p>Quick counter orders alongside a full seated menu.</p>
+            </div>
+          </div>
+          <div class="persona-card">
+            <div class="icon"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/><path d="M6 17h12"/></svg></div>
+            <div>
+              <h3>Cloud Kitchens</h3>
+              <p>Run takeaway-only orders and inventory without a dining floor.</p>
+            </div>
+          </div>
+          <div class="persona-card">
+            <div class="icon"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.37 11.223 8.372-6.777a2 2 0 0 1 2.516 0l8.371 6.777"/><path d="M21 15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-5.25"/><path d="M3 15a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h9"/><path d="m6.67 15 6.13 4.6a2 2 0 0 0 2.8-.4l3.15-4.2"/><rect width="20" height="4" x="2" y="11" rx="1"/></svg></div>
+            <div>
+              <h3>QSR &amp; Fast Casual</h3>
+              <p>High-volume billing with fast, simple order building.</p>
+            </div>
+          </div>
+          <div class="persona-card">
+            <div class="icon"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></div>
+            <div>
+              <h3>Toy Stores</h3>
+              <p>Track age ranges and safety certifications for every product on the shelf.</p>
+            </div>
+          </div>
+          <div class="persona-card">
+            <div class="icon"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg></div>
+            <div>
+              <h3>Electronics Stores</h3>
+              <p>Log serial numbers, warranty periods, and brand for every item you sell.</p>
+            </div>
+          </div>
+          <div class="persona-card">
+            <div class="icon"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+            <div>
+              <h3>General Retail</h3>
+              <p>A simple product catalog and checkout for any shop that isn't food or electronics.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="success-stories" class="tint">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">Success stories</span>
+          <h2>Loved by store owners</h2>
+          <p>See what early partners have to say about running their business on Tabsa.</p>
+        </div>
+        <div class="testimonial-wrap reveal">
+          <div class="testimonial-track" id="testimonial-track">
+            <div class="testimonial-card">
+              <div class="stars">★★★★★</div>
+              <p class="quote">"Switching to Tabsa cut our billing time in half — tables turn over so much faster now."</p>
+              <div class="testimonial-author">
+                <div class="avatar">A</div>
+                <div>
+                  <div class="name">Aditya</div>
+                  <div class="role">Café Owner</div>
+                </div>
+              </div>
+            </div>
+            <div class="testimonial-card">
+              <div class="stars">★★★★★</div>
+              <p class="quote">"The low-stock alerts alone have saved us from running out of our best-selling toys before a weekend rush — twice already."</p>
+              <div class="testimonial-author">
+                <div class="avatar">M</div>
+                <div>
+                  <div class="name">Meera</div>
+                  <div class="role">Toy Store Owner</div>
+                </div>
+              </div>
+            </div>
+            <div class="testimonial-card">
+              <div class="stars">★★★★★</div>
+              <p class="quote">"Locking a table for a reservation used to mean a sticky note on the POS screen. Now it's one tap."</p>
+              <div class="testimonial-author">
+                <div class="avatar">P</div>
+                <div>
+                  <div class="name">Priya</div>
+                  <div class="role">Bistro Owner</div>
+                </div>
+              </div>
+            </div>
+            <div class="testimonial-card">
+              <div class="stars">★★★★★</div>
+              <p class="quote">"Dark mode at 11pm during closing shift is such a small thing, but the whole team notices."</p>
+              <div class="testimonial-author">
+                <div class="avatar">R</div>
+                <div>
+                  <div class="name">Rohan</div>
+                  <div class="role">Cloud Kitchen Owner</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-controls">
+            <button class="carousel-btn" id="testimonial-prev" aria-label="Previous">←</button>
+            <button class="carousel-btn" id="testimonial-next" aria-label="Next">→</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">Pricing</span>
+          <h2>Simple plans that grow with you</h2>
+          <p>Start free, upgrade when you need more tables or counters, inventory, or analytics.</p>
+        </div>
+        <div class="pricing-grid reveal">
+          <div class="plan-card">
+            <div>
+              <div class="plan-name">Starter</div>
+              <div class="plan-price">₹999<span>/month</span></div>
+            </div>
+            <ul class="plan-features">
+              <li>1 outlet</li>
+              <li>Up to 8 tables / counters</li>
+              <li>Products &amp; Orders / Billing</li>
+              <li>Email support</li>
+            </ul>
+            <a href="/app/login" class="btn btn-secondary">Get started</a>
+          </div>
+          <div class="plan-card highlight">
+            <div class="plan-badge">Most popular</div>
+            <div>
+              <div class="plan-name">Growth</div>
+              <div class="plan-price">₹2,499<span>/month</span></div>
+            </div>
+            <ul class="plan-features">
+              <li>Everything in Starter</li>
+              <li>Inventory management</li>
+              <li>Dashboard &amp; analytics</li>
+              <li>Up to 20 tables / counters</li>
+              <li>Priority support</li>
+            </ul>
+            <a href="/app/login" class="btn btn-primary">Get started</a>
+          </div>
+          <div class="plan-card">
+            <div>
+              <div class="plan-name">Enterprise</div>
+              <div class="plan-price">Custom<span> pricing</span></div>
+            </div>
+            <ul class="plan-features">
+              <li>Multi-outlet ready</li>
+              <li>Unlimited tables / counters</li>
+              <li>Dedicated account manager</li>
+              <li>Custom integrations</li>
+            </ul>
+            <a href="#" class="btn btn-secondary">Talk to us</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="get-started">
+      <div class="wrap">
+        <div class="cta-banner reveal">
+          <div class="cta-doodles" aria-hidden="true">
+            <span class="doodle d1"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/><path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/><path d="m2.1 21.8 6.4-6.3"/><path d="m19 5-7 7"/></svg></span>
+            <span class="doodle d3"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="m4 8 16-4"/><path d="m8.86 6.78-.45-1.81a2 2 0 0 1 1.45-2.43l1.94-.48a2 2 0 0 1 2.43 1.46l.45 1.8"/></svg></span>
+            <span class="doodle d5"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12 4.207 4.207A.707.707 0 0 1 4.707 3h14.586a.707.707 0 0 1 .5 1.207z"/><path d="M12 12v10"/><path d="M7 22h10"/></svg></span>
+            <span class="doodle d7"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V7"/><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"/><path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z"/></svg></span>
+          </div>
+          <h2>Everything you need to run your business</h2>
+          <p class="lead">Set up your catalog and floor in minutes — no credit card required to start.</p>
+          <ul class="cta-checklist">
+            <li>✓ Orders &amp; Billing</li>
+            <li>✓ Products &amp; Inventory</li>
+            <li>✓ Live Analytics</li>
+            <li>✓ Dark Mode</li>
+          </ul>
+          <a href="/app/login" class="btn btn-primary btn-lg">Get Free Demo</a>
+          <p class="cta-note">Tabsa runs in your browser — no installation needed.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tint">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">Got questions?</span>
+          <h2>Frequently asked questions</h2>
+        </div>
+        <div class="faq-list reveal">
+          <details class="faq-item">
+            <summary>What is Tabsa?</summary>
+            <p>It's a single platform that replaces separate billing machines, order notebooks, and spreadsheets — Tabsa bundles orders, billing, products, inventory, and analytics into one dashboard, whether you run a restaurant, a toy store, an electronics shop, or any other retail business.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Do I need special hardware to use Tabsa?</summary>
+            <p>No special hardware required. Tabsa runs in any modern browser on a tablet, laptop, or desktop at the counter.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Can my whole staff use it at the same time?</summary>
+            <p>Yes — multiple devices can view and update the same tables and orders in real time.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Can I turn off features I don't need?</summary>
+            <p>Yes. Settings lets you show or hide the Inventory and Dashboard modules from the sidebar entirely.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Is there a way to try it before subscribing?</summary>
+            <p>Yes — Get Free Demo opens the live app so you can explore every feature before choosing a plan.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <a href="/" class="brand">
+              <img class="brand-logo" src="/assets/logo-lockup.png" alt="Tabsa" />
+            </a>
+            <p>Modern store management — orders, billing, products, inventory, and analytics in one place.</p>
+          </div>
+          <div class="footer-cols">
+            <div>
+              <div class="footer-col-title">Product</div>
+              <div class="footer-col">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="/app/login">Get started</a>
+              </div>
+            </div>
+            <div>
+              <div class="footer-col-title">Company</div>
+              <div class="footer-col">
+                <a href="#how-it-works">How it works</a>
+                <a href="#success-stories">Success stories</a>
+                <a href="#">Contact</a>
+              </div>
+            </div>
+            <div>
+              <div class="footer-col-title">Legal</div>
+              <div class="footer-col">
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer-inner">
+          <span>© 2026 Tabsa. All rights reserved.</span>
+          <div class="footer-links">
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      document.querySelectorAll('.tab-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.tab;
+          document.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('active', b === btn));
+          document.querySelectorAll('.tab-panel').forEach((panel) => {
+            panel.classList.toggle('active', panel.dataset.panel === target);
+          });
+        });
+      });
+
+      const track = document.getElementById('testimonial-track');
+      const scrollByCard = (dir) => {
+        const card = track.querySelector('.testimonial-card');
+        const amount = card ? card.getBoundingClientRect().width + 20 : 360;
+        track.scrollBy({ left: dir * amount, behavior: 'smooth' });
+      };
+      document.getElementById('testimonial-prev').addEventListener('click', () => scrollByCard(-1));
+      document.getElementById('testimonial-next').addEventListener('click', () => scrollByCard(1));
+
+      const nav = document.querySelector('.nav');
+      window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 8);
+      });
+
+      const revealObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.15 }
+      );
+      document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
+    </script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+# Auto-loaded by `docker compose up` for local runs — points Caddy at
+# Caddyfile.local (localhost, plain HTTP, no ACME) instead of tabsa.in.
+# On the real server, deploy with `docker compose -f docker-compose.yml up -d`
+# to skip this file and use the real Caddyfile.
+services:
+  caddy:
+    volumes:
+      - ./Caddyfile.local:/etc/caddy/Caddyfile:ro
