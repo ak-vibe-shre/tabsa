@@ -8,7 +8,7 @@ services:
     volumes:
       - tabsa-data:/app/server/data
     ports:
-      - "4000:4000" # Changed from 127.0.0.1:4000:4000 to allow bridge networking
+      - "127.0.0.1:4000:4000"
 
   caddy:
     image: caddy:2-alpine
@@ -17,7 +17,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /home/tabsa/Caddyfile.local:/etc/caddy/Caddyfile:ro # Changed to your actual file path
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
       - caddy-config:/config
     depends_on:
