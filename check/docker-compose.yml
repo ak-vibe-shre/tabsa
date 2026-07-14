@@ -1,0 +1,13 @@
+services:
+  caddy:
+    build: .
+    container_name: tabsa-caddy
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  caddy-data:
+  caddy-config:
