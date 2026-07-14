@@ -8,7 +8,6 @@ import { Field, Input, Switch } from '../../components/ui/Field.jsx';
 import { Skeleton } from '../../components/ui/Skeleton.jsx';
 import { SubscriptionModal } from './SubscriptionModal.jsx';
 import { StaffSection } from './StaffSection.jsx';
-import { NavVisibilitySection } from './NavVisibilitySection.jsx';
 import { TOGGLEABLE_MODULES } from '../../lib/modules.js';
 import './settings.css';
 
@@ -138,8 +137,6 @@ export function SettingsPage() {
       </Card>
 
       <SubscriptionModal open={subscriptionOpen} onClose={() => setSubscriptionOpen(false)} currentPlan={settings.subscription_plan} />
-
-      <NavVisibilitySection />
 
       <StaffSection />
     </div>

@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { Users, Trash2 } from 'lucide-react';
 import { api } from '../../lib/apiClient.js';
 import { useToast } from '../../components/ui/ToastContext.jsx';
+import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
 import { Card } from '../../components/ui/Card.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Badge } from '../../components/ui/Badge.jsx';
 import { Modal } from '../../components/ui/Modal.jsx';
-import { Select } from '../../components/ui/Field.jsx';
+import { Select, Switch } from '../../components/ui/Field.jsx';
 import { EmptyState } from '../../components/ui/EmptyState.jsx';
 import { StaffForm } from './StaffForm.jsx';
 
@@ -17,6 +18,13 @@ export function StaffSection() {
   const [formOpen, setFormOpen] = useState(false);
   const [createdCredentials, setCreatedCredentials] = useState(null);
   const toast = useToast();
+  const businessType = useCurrentBusinessType();
+
+  const NAV_TOGGLES = [
+    { key: 'dashboard', label: 'Dashboard' },
+    { key: 'products', label: businessType.productNoun.plural },
+    { key: 'inventory', label: 'Inventory' },
+  ];
 
   function reload() {
     api.get('/staff').then(setStaff).catch((err) => toast(err.message, 'error'));
@@ -42,6 +50,17 @@ export function StaffSection() {
       const updated = await api.patch(`/staff/${member.id}`, { role });
       setStaff((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
       toast(`${member.username} is now ${role}`, 'success');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  async function handleToggleNav(member, key) {
+    const current = member.nav_visibility ?? [];
+    const next = current.includes(key) ? current.filter((k) => k !== key) : [...current, key];
+    try {
+      const updated = await api.patch(`/staff/${member.id}`, { nav_visibility: next });
+      setStaff((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
     } catch (err) {
       toast(err.message, 'error');
     }
@@ -74,7 +93,8 @@ export function StaffSection() {
         </Button>
       </div>
       <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', margin: 'var(--space-2) 0 var(--space-4)' }}>
-        Settings is always owner-only. Configure what else managers and staff can see in "Staff &amp; manager access" below.
+        Settings is always owner-only and Orders is always visible. Toggle what each person can see below — it's set
+        per person, not by their role.
       </p>
 
       {staff === null ? null : staff.length === 0 ? (
@@ -82,16 +102,29 @@ export function StaffSection() {
       ) : (
         <div className="staff-list">
           {staff.map((member) => (
-            <Card key={member.id} tight className="staff-row">
-              <span className="staff-row-name">{member.username}</span>
-              <Select value={member.role} onChange={(e) => handleRoleChange(member, e.target.value)}>
-                <option value="manager">Manager</option>
-                <option value="staff">Staff</option>
-              </Select>
-              <Badge variant={ROLE_BADGE[member.role] ?? 'neutral'}>{member.role}</Badge>
-              <button className="btn btn-ghost btn-icon btn-sm" onClick={() => handleDelete(member)} aria-label="Remove">
-                <Trash2 size={14} />
-              </button>
+            <Card key={member.id} tight className="staff-card">
+              <div className="staff-row">
+                <span className="staff-row-name">{member.username}</span>
+                <Select value={member.role} onChange={(e) => handleRoleChange(member, e.target.value)}>
+                  <option value="manager">Manager</option>
+                  <option value="staff">Staff</option>
+                </Select>
+                <Badge variant={ROLE_BADGE[member.role] ?? 'neutral'}>{member.role}</Badge>
+                <button className="btn btn-ghost btn-icon btn-sm" onClick={() => handleDelete(member)} aria-label="Remove">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+              <div className="staff-permissions-row">
+                {NAV_TOGGLES.map((item) => (
+                  <label key={item.key} className="staff-permission-toggle">
+                    <Switch
+                      checked={(member.nav_visibility ?? []).includes(item.key)}
+                      onChange={() => handleToggleNav(member, item.key)}
+                    />
+                    <span>{item.label}</span>
+                  </label>
+                ))}
+              </div>
             </Card>
           ))}
         </div>

@@ -22,7 +22,7 @@ export function findSessionWithUser(token) {
   if (!token) return null;
   const row = db
     .prepare(
-      `SELECT s.token, s.expires_at, u.id as user_id, u.username, u.role, u.restaurant_id, r.business_type
+      `SELECT s.token, s.expires_at, u.id as user_id, u.username, u.role, u.restaurant_id, u.nav_visibility, r.business_type
        FROM sessions s
        JOIN users u ON u.id = s.user_id
        LEFT JOIN restaurants r ON r.id = u.restaurant_id

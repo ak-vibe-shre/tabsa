@@ -3,13 +3,10 @@ import { LayoutDashboard, UtensilsCrossed, ClipboardList, Package, Settings } fr
 import { Badge } from '../ui/Badge.jsx';
 import { useAuth } from '../../lib/AuthContext.jsx';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
-import { useSettings } from '../../lib/SettingsContext.jsx';
 
 export function Sidebar({ lowStockCount = 0, enabledModules }) {
   const { user, logout } = useAuth();
   const businessType = useCurrentBusinessType();
-  const { settings } = useSettings();
-  const navVisibility = settings?.nav_visibility;
 
   const NAV_ITEMS = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard', module: 'dashboard', key: 'dashboard', togglable: true, roles: ['owner', 'manager'] },
@@ -24,10 +21,7 @@ export function Sidebar({ lowStockCount = 0, enabledModules }) {
     if (!user) return false;
     if (user.role === 'owner') return item.roles.includes('owner');
     if (!item.togglable) return item.roles.includes(user.role);
-    // Not loaded yet — fall back to the pre-customization default so the
-    // sidebar doesn't flash empty while /api/settings resolves.
-    if (!navVisibility) return item.roles.includes(user.role);
-    return (navVisibility[user.role] ?? []).includes(item.key);
+    return (user.nav_visibility ?? []).includes(item.key);
   });
 
   return (

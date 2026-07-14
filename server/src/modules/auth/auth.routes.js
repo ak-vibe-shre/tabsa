@@ -9,6 +9,7 @@ import {
   findSessionWithUser,
   deleteSession,
 } from './auth.repository.js';
+import { resolveNavVisibility } from '../../lib/navItems.js';
 
 export const authRouter = Router();
 
@@ -35,6 +36,7 @@ authRouter.post(
       role: session.role,
       restaurantId: session.restaurant_id,
       businessType: session.business_type ?? null,
+      nav_visibility: resolveNavVisibility(session.role, session.nav_visibility),
     });
   })
 );
@@ -60,6 +62,7 @@ authRouter.get(
       role: session.role,
       restaurantId: session.restaurant_id,
       businessType: session.business_type ?? null,
+      nav_visibility: resolveNavVisibility(session.role, session.nav_visibility),
     });
   })
 );

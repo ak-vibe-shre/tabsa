@@ -1,6 +1,5 @@
 import { COOKIE_NAME, findSessionWithUser } from '../modules/auth/auth.repository.js';
 import { HttpError } from './httpError.js';
-import db from '../db/client.js';
 import { resolveNavVisibility } from '../lib/navItems.js';
 
 export function requireAuth(req, res, next) {
@@ -12,6 +11,7 @@ export function requireAuth(req, res, next) {
     role: session.role,
     restaurantId: session.restaurant_id,
     businessType: session.business_type ?? null,
+    navVisibility: resolveNavVisibility(session.role, session.nav_visibility),
   };
   next();
 }
@@ -31,17 +31,14 @@ export function requireRestaurantRole(...roles) {
 }
 
 // Like requireRestaurantRole('owner', 'manager', 'staff'), but manager/staff
-// access is gated by the restaurant's owner-configurable nav_visibility
-// (see lib/navItems.js) instead of being unconditional.
+// access is gated by that individual user's own owner-configurable
+// nav_visibility (see lib/navItems.js), not just their role.
 export function requireNavAccess(navKey) {
   return (req, res, next) => {
     if (!req.user) return next(new HttpError(401, 'Not authenticated'));
     if (req.user.role === 'owner') return next();
     if (req.user.role !== 'manager' && req.user.role !== 'staff') return next(new HttpError(403, 'Forbidden'));
-
-    const row = db.prepare('SELECT nav_visibility FROM restaurants WHERE id = ?').get(req.user.restaurantId);
-    const visibility = resolveNavVisibility(row?.nav_visibility);
-    if (!(visibility[req.user.role] ?? []).includes(navKey)) return next(new HttpError(403, 'Forbidden'));
+    if (!req.user.navVisibility.includes(navKey)) return next(new HttpError(403, 'Forbidden'));
     next();
   };
 }

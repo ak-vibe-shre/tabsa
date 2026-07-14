@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS restaurants (
   address TEXT,
   phone TEXT,
   enabled_modules TEXT NOT NULL DEFAULT '[]',
-  nav_visibility TEXT,
   subscription_plan TEXT NOT NULL DEFAULT 'starter' CHECK (subscription_plan IN ('starter', 'growth', 'enterprise')),
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'suspended')),
   business_type TEXT NOT NULL DEFAULT 'restaurant'
@@ -19,6 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
   username TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'owner' CHECK (role IN ('owner', 'manager', 'staff', 'platform_admin')),
+  nav_visibility TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
