@@ -7,9 +7,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-4);
   padding: var(--space-4) var(--space-8);
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
 }
 
 .admin-brand {
@@ -34,6 +36,19 @@
 .admin-nav {
   display: flex;
   gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .admin-topbar {
+    padding: var(--space-4);
+  }
+  .admin-logout-text {
+    display: none;
+  }
+  .admin-content {
+    padding: var(--space-4);
+  }
 }
 
 .admin-nav-link {

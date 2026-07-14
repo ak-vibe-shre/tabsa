@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext.jsx';
 import { Button } from '../../components/ui/Button.jsx';
+import { Modal } from '../../components/ui/Modal.jsx';
 import './admin.css';
 
 const ADMIN_NAV_ITEMS = [
@@ -11,9 +14,11 @@ const ADMIN_NAV_ITEMS = [
 
 export function AdminLayout() {
   const { logout } = useAuth();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  function handleLogout() {
-    if (confirm('Log out of your account?')) logout();
+  function handleConfirmLogout() {
+    setConfirmOpen(false);
+    logout();
   }
 
   return (
@@ -35,13 +40,32 @@ export function AdminLayout() {
             </NavLink>
           ))}
         </nav>
-        <Button variant="secondary" size="sm" onClick={handleLogout}>
-          Log out
+        <Button variant="secondary" size="sm" onClick={() => setConfirmOpen(true)} aria-label="Log out">
+          <LogOut size={14} strokeWidth={2} />
+          <span className="admin-logout-text">Log out</span>
         </Button>
       </header>
       <main className="admin-content">
         <Outlet />
       </main>
+
+      <Modal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Log out?"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleConfirmLogout}>
+              Log out
+            </Button>
+          </>
+        }
+      >
+        <p>You'll need to sign in again to continue.</p>
+      </Modal>
     </div>
   );
 }

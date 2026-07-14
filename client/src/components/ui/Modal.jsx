@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 export function Modal({ open, onClose, title, children, footer, wide = false }) {
@@ -13,7 +14,10 @@ export function Modal({ open, onClose, title, children, footer, wide = false }) 
 
   if (!open) return null;
 
-  return (
+  // Rendered at document.body so a fixed-position, high-z-index overlay can
+  // never get trapped inside an ancestor's stacking context (e.g. a sticky
+  // or transformed container) and paint underneath page content.
+  return createPortal(
     <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className={`modal-panel${wide ? ' modal-panel-wide' : ''}`} role="dialog" aria-modal="true">
         <div className="modal-header">
@@ -25,6 +29,7 @@ export function Modal({ open, onClose, title, children, footer, wide = false }) 
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-footer">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

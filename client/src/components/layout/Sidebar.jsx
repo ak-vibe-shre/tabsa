@@ -1,12 +1,16 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, UtensilsCrossed, ClipboardList, Package, Settings } from 'lucide-react';
+import { LayoutDashboard, UtensilsCrossed, ClipboardList, Package, Settings, LogOut } from 'lucide-react';
 import { Badge } from '../ui/Badge.jsx';
+import { Modal } from '../ui/Modal.jsx';
+import { Button } from '../ui/Button.jsx';
 import { useAuth } from '../../lib/AuthContext.jsx';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
 
 export function Sidebar({ lowStockCount = 0, enabledModules }) {
   const { user, logout } = useAuth();
   const businessType = useCurrentBusinessType();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const NAV_ITEMS = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard', module: 'dashboard', key: 'dashboard', togglable: true, roles: ['owner', 'manager'] },
@@ -24,8 +28,9 @@ export function Sidebar({ lowStockCount = 0, enabledModules }) {
     return (user.nav_visibility ?? []).includes(item.key);
   });
 
-  function handleLogout() {
-    if (confirm('Log out of your account?')) logout();
+  function handleConfirmLogout() {
+    setConfirmOpen(false);
+    logout();
   }
 
   return (
@@ -59,10 +64,29 @@ export function Sidebar({ lowStockCount = 0, enabledModules }) {
       </nav>
       <div className="sidebar-footer">
         <div className="sidebar-footer-user">{user?.username}</div>
-        <button className="sidebar-logout" onClick={handleLogout}>
-          Log out
+        <button className="sidebar-logout" onClick={() => setConfirmOpen(true)} title="Log out" aria-label="Log out">
+          <LogOut size={14} strokeWidth={2} />
+          <span className="sidebar-logout-text">Log out</span>
         </button>
       </div>
+
+      <Modal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Log out?"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleConfirmLogout}>
+              Log out
+            </Button>
+          </>
+        }
+      >
+        <p>You'll need to sign in again to continue.</p>
+      </Modal>
     </aside>
   );
 }

@@ -15,7 +15,7 @@ echo "==> Stopping previous containers"
 docker compose down
 
 echo "==> Building containers (no cache)"
-docker compose build --no-cache
+docker compose build 
 
 echo "==> Starting containers"
 docker compose up -d
