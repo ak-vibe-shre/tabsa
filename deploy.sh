@@ -11,8 +11,11 @@ echo "==> Pulling latest ($BRANCH)"
 git fetch origin "$BRANCH"
 git reset --hard "origin/$BRANCH"
 
-echo "==> Building and restarting containers"
-docker compose up -d --build
+echo "==> Building containers (no cache)"
+docker compose build --no-cache
+
+echo "==> Restarting containers"
+docker compose up -d
 
 echo "==> Done"
 docker compose ps
