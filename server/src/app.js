@@ -14,7 +14,7 @@ import { ordersRouter } from './modules/orders/orders.routes.js';
 import { inventoryRouter } from './modules/inventory/inventory.routes.js';
 import { reportsRouter } from './modules/reports/reports.routes.js';
 import { settingsRouter } from './modules/settings/settings.routes.js';
-import { requireAuth, requireRole, requireRestaurantRole } from './middleware/requireAuth.js';
+import { requireAuth, requireRole, requireRestaurantRole, requireNavAccess } from './middleware/requireAuth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 export const app = express();
@@ -34,8 +34,8 @@ app.use('/api/categories', requireAuth, categoriesRouter);
 app.use('/api/products', requireAuth, productsRouter);
 app.use('/api/tables', requireAuth, tablesRouter);
 app.use('/api/orders', requireAuth, ordersRouter);
-app.use('/api/inventory', requireAuth, requireRestaurantRole('owner', 'manager'), inventoryRouter);
-app.use('/api/reports', requireAuth, requireRestaurantRole('owner', 'manager'), reportsRouter);
+app.use('/api/inventory', requireAuth, requireNavAccess('inventory'), inventoryRouter);
+app.use('/api/reports', requireAuth, requireNavAccess('dashboard'), reportsRouter);
 app.use('/api/settings', requireAuth, settingsRouter);
 app.use('/api/staff', requireAuth, requireRestaurantRole('owner'), staffRouter);
 

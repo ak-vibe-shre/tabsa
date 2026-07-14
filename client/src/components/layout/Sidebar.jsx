@@ -3,24 +3,32 @@ import { LayoutDashboard, UtensilsCrossed, ClipboardList, Package, Settings } fr
 import { Badge } from '../ui/Badge.jsx';
 import { useAuth } from '../../lib/AuthContext.jsx';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
+import { useSettings } from '../../lib/SettingsContext.jsx';
 
 export function Sidebar({ lowStockCount = 0, enabledModules }) {
   const { user, logout } = useAuth();
   const businessType = useCurrentBusinessType();
+  const { settings } = useSettings();
+  const navVisibility = settings?.nav_visibility;
 
   const NAV_ITEMS = [
-    { to: '/', icon: LayoutDashboard, label: 'Dashboard', module: 'dashboard', roles: ['owner', 'manager'] },
-    { to: '/orders', icon: UtensilsCrossed, label: businessType.orderNoun, module: null, roles: ['owner', 'manager', 'staff'] },
-    { to: '/products', icon: ClipboardList, label: businessType.productNoun.plural, module: null, roles: ['owner', 'manager'] },
-    { to: '/inventory', icon: Package, label: 'Inventory', module: 'inventory', roles: ['owner', 'manager'] },
-    { to: '/settings', icon: Settings, label: 'Settings', module: null, roles: ['owner'] },
+    { to: '/', icon: LayoutDashboard, label: 'Dashboard', module: 'dashboard', key: 'dashboard', togglable: true, roles: ['owner', 'manager'] },
+    { to: '/orders', icon: UtensilsCrossed, label: businessType.orderNoun, module: null, key: 'orders', togglable: false, roles: ['owner', 'manager', 'staff'] },
+    { to: '/products', icon: ClipboardList, label: businessType.productNoun.plural, module: null, key: 'products', togglable: true, roles: ['owner', 'manager'] },
+    { to: '/inventory', icon: Package, label: 'Inventory', module: 'inventory', key: 'inventory', togglable: true, roles: ['owner', 'manager'] },
+    { to: '/settings', icon: Settings, label: 'Settings', module: null, key: 'settings', togglable: false, roles: ['owner'] },
   ];
 
-  const visibleItems = NAV_ITEMS.filter(
-    (item) =>
-      (!item.module || !enabledModules || enabledModules.includes(item.module)) &&
-      (!user || item.roles.includes(user.role))
-  );
+  const visibleItems = NAV_ITEMS.filter((item) => {
+    if (item.module && enabledModules && !enabledModules.includes(item.module)) return false;
+    if (!user) return false;
+    if (user.role === 'owner') return item.roles.includes('owner');
+    if (!item.togglable) return item.roles.includes(user.role);
+    // Not loaded yet — fall back to the pre-customization default so the
+    // sidebar doesn't flash empty while /api/settings resolves.
+    if (!navVisibility) return item.roles.includes(user.role);
+    return (navVisibility[user.role] ?? []).includes(item.key);
+  });
 
   return (
     <aside className="sidebar">

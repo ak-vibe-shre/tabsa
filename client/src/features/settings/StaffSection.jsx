@@ -74,7 +74,7 @@ export function StaffSection() {
         </Button>
       </div>
       <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', margin: 'var(--space-2) 0 var(--space-4)' }}>
-        Managers can access everything except settings. Staff are limited to Orders &amp; billing.
+        Settings is always owner-only. Configure what else managers and staff can see in "Staff &amp; manager access" below.
       </p>
 
       {staff === null ? null : staff.length === 0 ? (

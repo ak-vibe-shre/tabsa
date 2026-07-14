@@ -21,9 +21,15 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route path="/orders" element={<PosPage />} />
 
-          <Route element={<RequireRole roles={['owner', 'manager']} redirectTo="/orders" />}>
+          <Route element={<RequireRole roles={['owner', 'manager', 'staff']} navKey="dashboard" redirectTo="/orders" />}>
             <Route path="/" element={<DashboardPage />} />
+          </Route>
+
+          <Route element={<RequireRole roles={['owner', 'manager', 'staff']} navKey="products" redirectTo="/orders" />}>
             <Route path="/products" element={<ProductsPage />} />
+          </Route>
+
+          <Route element={<RequireRole roles={['owner', 'manager', 'staff']} navKey="inventory" redirectTo="/orders" />}>
             <Route path="/inventory" element={<InventoryPage />} />
           </Route>
 

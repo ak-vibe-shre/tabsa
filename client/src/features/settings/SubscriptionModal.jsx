@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Modal } from '../../components/ui/Modal.jsx';
-import { Button } from '../../components/ui/Button.jsx';
+import { Badge } from '../../components/ui/Badge.jsx';
 import { api } from '../../lib/apiClient.js';
 
-export function SubscriptionModal({ open, onClose, currentPlan, onSelectPlan }) {
+// Read-only: plan changes are made by platform_admin only (see
+// AdminRestaurantsPage), so this just lets an owner compare plans.
+export function SubscriptionModal({ open, onClose, currentPlan }) {
   const [plans, setPlans] = useState(null);
-  const [submittingKey, setSubmittingKey] = useState(null);
 
   useEffect(() => {
     if (open && plans === null) {
@@ -13,17 +14,8 @@ export function SubscriptionModal({ open, onClose, currentPlan, onSelectPlan }) 
     }
   }, [open, plans]);
 
-  async function handleSelect(key) {
-    setSubmittingKey(key);
-    try {
-      await onSelectPlan(key);
-    } finally {
-      setSubmittingKey(null);
-    }
-  }
-
   return (
-    <Modal open={open} onClose={onClose} title="Choose a plan" wide>
+    <Modal open={open} onClose={onClose} title="Plans" wide>
       <div className="plan-grid">
         {(plans ?? []).map((plan) => (
           <div key={plan.key} className={`plan-card${plan.key === 'growth' ? ' highlight' : ''}${currentPlan === plan.key ? ' current' : ''}`}>
@@ -35,14 +27,7 @@ export function SubscriptionModal({ open, onClose, currentPlan, onSelectPlan }) 
                 <li key={f}>{f}</li>
               ))}
             </ul>
-            <Button
-              variant={currentPlan === plan.key ? 'secondary' : 'primary'}
-              style={{ width: '100%' }}
-              disabled={currentPlan === plan.key || submittingKey === plan.key}
-              onClick={() => handleSelect(plan.key)}
-            >
-              {currentPlan === plan.key ? 'Current plan' : submittingKey === plan.key ? 'Switching…' : 'Select plan'}
-            </Button>
+            {currentPlan === plan.key && <Badge>Current plan</Badge>}
           </div>
         ))}
       </div>

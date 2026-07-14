@@ -45,7 +45,9 @@ export function DashboardPage() {
       api.get(`/reports/sales-trend?from=${from}&to=${to}`),
       api.get(`/reports/top-items?from=${from}&to=${to}&limit=8`),
       api.get(`/reports/category-revenue?from=${from}&to=${to}`),
-      api.get('/inventory?low_stock=true'),
+      // Optional widget — a staff member can have dashboard access without
+      // inventory access, so don't let this fail the whole page.
+      api.get('/inventory?low_stock=true').catch(() => []),
     ])
       .then(([summaryData, trendData, topItemsData, categoryData, lowStock]) => {
         setSummary(summaryData);

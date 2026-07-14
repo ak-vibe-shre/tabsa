@@ -8,6 +8,7 @@ import { Field, Input, Switch } from '../../components/ui/Field.jsx';
 import { Skeleton } from '../../components/ui/Skeleton.jsx';
 import { SubscriptionModal } from './SubscriptionModal.jsx';
 import { StaffSection } from './StaffSection.jsx';
+import { NavVisibilitySection } from './NavVisibilitySection.jsx';
 import { TOGGLEABLE_MODULES } from '../../lib/modules.js';
 import './settings.css';
 
@@ -49,16 +50,6 @@ export function SettingsPage() {
     const next = current.includes(key) ? current.filter((m) => m !== key) : [...current, key];
     try {
       await updateSettings({ enabled_modules: next });
-    } catch (err) {
-      toast(err.message, 'error');
-    }
-  }
-
-  async function handleSelectPlan(planKey) {
-    try {
-      await updateSettings({ subscription_plan: planKey });
-      toast(`Switched to the ${PLAN_NAMES[planKey]} plan`, 'success');
-      setSubscriptionOpen(false);
     } catch (err) {
       toast(err.message, 'error');
     }
@@ -141,14 +132,14 @@ export function SettingsPage() {
             </strong>
           </span>
         </div>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-3)' }}>
+          Plan changes are made by your platform administrator.
+        </p>
       </Card>
 
-      <SubscriptionModal
-        open={subscriptionOpen}
-        onClose={() => setSubscriptionOpen(false)}
-        currentPlan={settings.subscription_plan}
-        onSelectPlan={handleSelectPlan}
-      />
+      <SubscriptionModal open={subscriptionOpen} onClose={() => setSubscriptionOpen(false)} currentPlan={settings.subscription_plan} />
+
+      <NavVisibilitySection />
 
       <StaffSection />
     </div>

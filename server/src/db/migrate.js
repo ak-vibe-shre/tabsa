@@ -213,6 +213,7 @@ export function migrate() {
     'business_type',
     "TEXT NOT NULL DEFAULT 'restaurant' CHECK (business_type IN ('restaurant','toy_store','electronics_store','general_retail'))"
   );
+  ensureColumn('restaurants', 'nav_visibility', 'TEXT');
   ensureUserRoleConstraint();
 
   const restaurantId = ensureFirstRestaurant();
