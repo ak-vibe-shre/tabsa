@@ -25,7 +25,7 @@ authRouter.post(
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: req.secure,
       maxAge: SESSION_DURATION_MS,
     });
     const session = findSessionWithUser(token);

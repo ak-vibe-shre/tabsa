@@ -1,6 +1,0 @@
-# Auto-loaded by `docker compose up` for local runs.
-# This keeps the deployment available on localhost over plain HTTP.
-services:
-  nginx:
-    ports:
-      - "127.0.0.1:8080:80"
