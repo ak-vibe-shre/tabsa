@@ -24,6 +24,10 @@ export function Sidebar({ lowStockCount = 0, enabledModules }) {
     return (user.nav_visibility ?? []).includes(item.key);
   });
 
+  function handleLogout() {
+    if (confirm('Log out of your account?')) logout();
+  }
+
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
@@ -55,7 +59,7 @@ export function Sidebar({ lowStockCount = 0, enabledModules }) {
       </nav>
       <div className="sidebar-footer">
         <div className="sidebar-footer-user">{user?.username}</div>
-        <button className="sidebar-logout" onClick={logout}>
+        <button className="sidebar-logout" onClick={handleLogout}>
           Log out
         </button>
       </div>

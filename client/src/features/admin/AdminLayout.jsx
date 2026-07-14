@@ -12,6 +12,10 @@ const ADMIN_NAV_ITEMS = [
 export function AdminLayout() {
   const { logout } = useAuth();
 
+  function handleLogout() {
+    if (confirm('Log out of your account?')) logout();
+  }
+
   return (
     <div className="admin-shell">
       <header className="admin-topbar">
@@ -31,7 +35,7 @@ export function AdminLayout() {
             </NavLink>
           ))}
         </nav>
-        <Button variant="secondary" size="sm" onClick={logout}>
+        <Button variant="secondary" size="sm" onClick={handleLogout}>
           Log out
         </Button>
       </header>
