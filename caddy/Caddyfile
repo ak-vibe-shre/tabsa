@@ -1,21 +1,19 @@
 # Listens on plain HTTP :3000 — the VPS panel's own reverse proxy terminates
 # TLS for tabsa.in/www.tabsa.in at the edge and forwards here, so this Caddy
 # instance is purely an internal router, not the public-facing SSL endpoint.
-#
-# APP_DIR must match the checkout path deploy.sh uses (default /home/tabsa).
 :3000 {
 	handle /api/* {
 		reverse_proxy 127.0.0.1:4000
 	}
 
 	handle /app/* {
-		root * /home/tabsa/client/dist
+		root * /srv
 		try_files {path} /app/index.html
 		file_server
 	}
 
 	handle {
-		root * /home/tabsa/client/dist
+		root * /srv
 		try_files {path} /index.html
 		file_server
 	}
