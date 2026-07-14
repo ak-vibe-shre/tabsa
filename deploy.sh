@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Run on the EC2 host to ship the latest main to production.
-# One-time host setup (not handled here): Node 20, `npm i -g pm2`, and Caddy
-# installed natively (e.g. `apt install caddy`) with this repo's caddy/Caddyfile
-# symlinked or copied to /etc/caddy/Caddyfile.
+# Run on the host to ship the latest main to production.
+# One-time host setup: run ./setup.sh first (Node, pm2, Caddy + SSL).
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/home/tabsa}"
@@ -25,7 +23,7 @@ pm2 startOrReload ecosystem.config.cjs --env production
 pm2 save
 
 echo "==> Reloading Caddy"
-sudo systemctl reload caddy
+sudo systemctl reload-or-restart caddy
 
 echo "==> Done"
 pm2 status
