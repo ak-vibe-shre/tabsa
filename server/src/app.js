@@ -1,6 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -41,25 +38,6 @@ app.use('/api/inventory', requireAuth, requireRestaurantRole('owner', 'manager')
 app.use('/api/reports', requireAuth, requireRestaurantRole('owner', 'manager'), reportsRouter);
 app.use('/api/settings', requireAuth, settingsRouter);
 app.use('/api/staff', requireAuth, requireRestaurantRole('owner'), staffRouter);
-
-// Serve the built client (client/dist) when present, so a single server can host
-// both the API and the frontend. In local dev this directory doesn't exist —
-// Vite's dev server handles the frontend instead — so this block is skipped.
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const clientDistPath = path.join(__dirname, '..', '..', 'client', 'dist');
-const clientIndexPath = path.join(clientDistPath, 'index.html');
-
-if (fs.existsSync(clientIndexPath)) {
-  app.use(express.static(clientDistPath));
-
-  app.get(/^\/app(\/.*)?$/, (req, res, next) => {
-    res.sendFile(path.join(clientDistPath, 'app', 'index.html'), (err) => err && next(err));
-  });
-
-  app.get(/^(?!\/api).*/, (req, res, next) => {
-    res.sendFile(clientIndexPath, (err) => err && next(err));
-  });
-}
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
