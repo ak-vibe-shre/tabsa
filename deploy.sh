@@ -5,7 +5,7 @@
 # symlinked or copied to /etc/caddy/Caddyfile.
 set -euo pipefail
 
-APP_DIR="${APP_DIR:-/home/ubuntu/tabsa}"
+APP_DIR="${APP_DIR:-/home/tabsa}"
 BRANCH="${BRANCH:-main}"
 
 cd "$APP_DIR"
