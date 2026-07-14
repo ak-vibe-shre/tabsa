@@ -1,21 +1,11 @@
 {
-    auto_https disable_redirects
+    email akshay.aradhya.sp@gmail.com
 }
 
 tabsa.in, www.tabsa.in {
-    handle /api/* {
-        reverse_proxy 127.0.0.1:4000
-    }
+    reverse_proxy /api/* 127.0.0.1:4000
 
-    handle /app/* {
-        root * /srv
-        try_files {path} /app/index.html
-        file_server
-    }
-
-    handle {
-        root * /srv
-        try_files {path} /index.html
-        file_server
-    }
+    root * /srv
+    try_files {path} /index.html
+    file_server
 }
