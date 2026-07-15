@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ClipboardList, Package } from 'lucide-react';
 import { api } from '../../lib/apiClient.js';
+import { usePendingSet } from '../../lib/usePendingSet.js';
 import { useToast } from '../../components/ui/ToastContext.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Modal } from '../../components/ui/Modal.jsx';
@@ -21,6 +22,7 @@ export function ProductsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const toast = useToast();
+  const { isPending, withPending } = usePendingSet();
 
   async function loadAll() {
     setLoading(true);
@@ -51,15 +53,17 @@ export function ProductsPage() {
 
   async function handleDeleteCategory(category) {
     if (!confirm(`Delete category "${category.name}"? Items in it will also be removed.`)) return;
-    try {
-      await api.del(`/categories/${category.id}`);
-      setCategories((prev) => prev.filter((c) => c.id !== category.id));
-      setItems((prev) => prev.filter((i) => i.category_id !== category.id));
-      if (selectedCategory === category.id) setSelectedCategory(null);
-      toast('Category deleted', 'success');
-    } catch (err) {
-      toast(err.message, 'error');
-    }
+    await withPending(`cat-del-${category.id}`, async () => {
+      try {
+        await api.del(`/categories/${category.id}`);
+        setCategories((prev) => prev.filter((c) => c.id !== category.id));
+        setItems((prev) => prev.filter((i) => i.category_id !== category.id));
+        if (selectedCategory === category.id) setSelectedCategory(null);
+        toast('Category deleted', 'success');
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    })();
   }
 
   function openAddItem() {
@@ -91,23 +95,26 @@ export function ProductsPage() {
 
   async function handleDeleteItem(item) {
     if (!confirm(`Delete "${item.name}"?`)) return;
-    try {
-      await api.del(`/products/${item.id}`);
-      setItems((prev) => prev.filter((i) => i.id !== item.id));
-      toast(`${businessType.productNoun.singular} deleted`, 'success');
-    } catch (err) {
-      toast(err.message, 'error');
-    }
+    await withPending(`item-del-${item.id}`, async () => {
+      try {
+        await api.del(`/products/${item.id}`);
+        setItems((prev) => prev.filter((i) => i.id !== item.id));
+        toast(`${businessType.productNoun.singular} deleted`, 'success');
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    })();
   }
 
-  async function handleToggleAvailability(item) {
-    try {
-      const updated = await api.patch(`/products/${item.id}/availability`, { is_available: !item.is_available });
-      setItems((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
-    } catch (err) {
-      toast(err.message, 'error');
-    }
-  }
+  const handleToggleAvailability = (item) =>
+    withPending(`avail-${item.id}`, async () => {
+      try {
+        const updated = await api.patch(`/products/${item.id}/availability`, { is_available: !item.is_available });
+        setItems((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    })();
 
   const visibleItems = selectedCategory ? items.filter((i) => i.category_id === selectedCategory) : items;
 
@@ -128,6 +135,7 @@ export function ProductsPage() {
         onSelect={setSelectedCategory}
         onAdd={handleAddCategory}
         onDelete={handleDeleteCategory}
+        isDeleting={(id) => isPending(`cat-del-${id}`)}
       />
 
       {loading ? (
@@ -157,6 +165,8 @@ export function ProductsPage() {
               onEdit={openEditItem}
               onDelete={handleDeleteItem}
               onToggleAvailability={handleToggleAvailability}
+              availabilityPending={isPending(`avail-${item.id}`)}
+              deletePending={isPending(`item-del-${item.id}`)}
             />
           ))}
         </div>

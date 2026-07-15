@@ -302,6 +302,21 @@
   }
 }
 
+/* Spinner */
+.spinner {
+  display: inline-block;
+  flex-shrink: 0;
+  border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Toast */
 .toast-container {
   position: fixed;
@@ -367,4 +382,13 @@
 }
 .switch input:checked + .switch-track::before {
   transform: translateX(18px);
+}
+.switch-loading .switch-track {
+  opacity: 0.6;
+}
+.switch-loading .spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  color: var(--color-text-muted);
 }

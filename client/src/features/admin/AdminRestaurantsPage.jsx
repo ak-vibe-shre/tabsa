@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/apiClient.js';
+import { usePendingSet } from '../../lib/usePendingSet.js';
 import { useToast } from '../../components/ui/ToastContext.jsx';
 import { useBusinessTypes } from '../../lib/BusinessTypeContext.jsx';
 import { Card } from '../../components/ui/Card.jsx';
@@ -19,6 +20,7 @@ export function AdminRestaurantsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [createdCredentials, setCreatedCredentials] = useState(null);
   const showToast = useToast();
+  const { isPending, withPending } = usePendingSet();
 
   function reload() {
     api.get('/admin/restaurants').then(setRestaurants);
@@ -53,23 +55,29 @@ export function AdminRestaurantsPage() {
     }
   }
 
-  async function toggleStatus(restaurant) {
-    const nextStatus = restaurant.status === 'active' ? 'suspended' : 'active';
-    await api.patch(`/admin/restaurants/${restaurant.id}`, { status: nextStatus });
-    showToast(`${restaurant.name} is now ${nextStatus}`, 'success');
-    reload();
-  }
+  const toggleStatus = (restaurant) =>
+    withPending(`status-${restaurant.id}`, async () => {
+      const nextStatus = restaurant.status === 'active' ? 'suspended' : 'active';
+      try {
+        await api.patch(`/admin/restaurants/${restaurant.id}`, { status: nextStatus });
+        showToast(`${restaurant.name} is now ${nextStatus}`, 'success');
+        reload();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    })();
 
-  async function handlePlanChange(restaurant, plan) {
-    if (plan === restaurant.subscription_plan) return;
-    try {
-      await api.patch(`/admin/restaurants/${restaurant.id}`, { subscription_plan: plan });
-      showToast(`${restaurant.name} moved to ${plan}`, 'success');
-      reload();
-    } catch (err) {
-      showToast(err.message, 'error');
-    }
-  }
+  const handlePlanChange = (restaurant, plan) =>
+    withPending(`plan-${restaurant.id}`, async () => {
+      if (plan === restaurant.subscription_plan) return;
+      try {
+        await api.patch(`/admin/restaurants/${restaurant.id}`, { subscription_plan: plan });
+        showToast(`${restaurant.name} moved to ${plan}`, 'success');
+        reload();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    })();
 
   function closeModal() {
     setModalOpen(false);
@@ -113,7 +121,11 @@ export function AdminRestaurantsPage() {
                   </td>
                   <td>{r.owner_username ?? '—'}</td>
                   <td className="admin-table-plan-cell">
-                    <Select value={r.subscription_plan} onChange={(e) => handlePlanChange(r, e.target.value)}>
+                    <Select
+                      value={r.subscription_plan}
+                      onChange={(e) => handlePlanChange(r, e.target.value)}
+                      disabled={isPending(`plan-${r.id}`)}
+                    >
                       {planOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                           {opt.label}
@@ -133,7 +145,7 @@ export function AdminRestaurantsPage() {
                   <td>{r.order_count}</td>
                   <td>{new Date(r.created_at).toLocaleDateString()}</td>
                   <td>
-                    <Button variant="ghost" size="sm" onClick={() => toggleStatus(r)}>
+                    <Button variant="ghost" size="sm" onClick={() => toggleStatus(r)} loading={isPending(`status-${r.id}`)}>
                       {r.status === 'active' ? 'Suspend' : 'Activate'}
                     </Button>
                   </td>

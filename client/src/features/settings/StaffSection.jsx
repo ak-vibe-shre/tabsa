@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Users, Trash2 } from 'lucide-react';
 import { api } from '../../lib/apiClient.js';
+import { usePendingSet } from '../../lib/usePendingSet.js';
 import { useToast } from '../../components/ui/ToastContext.jsx';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
 import { Card } from '../../components/ui/Card.jsx';
@@ -19,6 +20,7 @@ export function StaffSection() {
   const [createdCredentials, setCreatedCredentials] = useState(null);
   const toast = useToast();
   const businessType = useCurrentBusinessType();
+  const { isPending, withPending } = usePendingSet();
 
   const NAV_TOGGLES = [
     { key: 'dashboard', label: 'Dashboard' },
@@ -44,37 +46,41 @@ export function StaffSection() {
     }
   }
 
-  async function handleRoleChange(member, role) {
-    if (role === member.role) return;
-    try {
-      const updated = await api.patch(`/staff/${member.id}`, { role });
-      setStaff((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
-      toast(`${member.username} is now ${role}`, 'success');
-    } catch (err) {
-      toast(err.message, 'error');
-    }
-  }
+  const handleRoleChange = (member, role) =>
+    withPending(`role-${member.id}`, async () => {
+      if (role === member.role) return;
+      try {
+        const updated = await api.patch(`/staff/${member.id}`, { role });
+        setStaff((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+        toast(`${member.username} is now ${role}`, 'success');
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    })();
 
-  async function handleToggleNav(member, key) {
-    const current = member.nav_visibility ?? [];
-    const next = current.includes(key) ? current.filter((k) => k !== key) : [...current, key];
-    try {
-      const updated = await api.patch(`/staff/${member.id}`, { nav_visibility: next });
-      setStaff((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
-    } catch (err) {
-      toast(err.message, 'error');
-    }
-  }
+  const handleToggleNav = (member, key) =>
+    withPending(`nav-${member.id}-${key}`, async () => {
+      const current = member.nav_visibility ?? [];
+      const next = current.includes(key) ? current.filter((k) => k !== key) : [...current, key];
+      try {
+        const updated = await api.patch(`/staff/${member.id}`, { nav_visibility: next });
+        setStaff((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    })();
 
   async function handleDelete(member) {
     if (!confirm(`Remove staff account "${member.username}"?`)) return;
-    try {
-      await api.del(`/staff/${member.id}`);
-      setStaff((prev) => prev.filter((s) => s.id !== member.id));
-      toast('Staff account removed', 'success');
-    } catch (err) {
-      toast(err.message, 'error');
-    }
+    await withPending(`del-${member.id}`, async () => {
+      try {
+        await api.del(`/staff/${member.id}`);
+        setStaff((prev) => prev.filter((s) => s.id !== member.id));
+        toast('Staff account removed', 'success');
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    })();
   }
 
   function closeModal() {
@@ -105,14 +111,25 @@ export function StaffSection() {
             <Card key={member.id} tight className="staff-card">
               <div className="staff-row">
                 <span className="staff-row-name">{member.username}</span>
-                <Select value={member.role} onChange={(e) => handleRoleChange(member, e.target.value)}>
+                <Select
+                  value={member.role}
+                  onChange={(e) => handleRoleChange(member, e.target.value)}
+                  disabled={isPending(`role-${member.id}`)}
+                >
                   <option value="manager">Manager</option>
                   <option value="staff">Staff</option>
                 </Select>
                 <Badge variant={ROLE_BADGE[member.role] ?? 'neutral'}>{member.role}</Badge>
-                <button className="btn btn-ghost btn-icon btn-sm" onClick={() => handleDelete(member)} aria-label="Remove">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="btn-icon"
+                  onClick={() => handleDelete(member)}
+                  loading={isPending(`del-${member.id}`)}
+                  aria-label="Remove"
+                >
                   <Trash2 size={14} />
-                </button>
+                </Button>
               </div>
               <div className="staff-permissions-row">
                 {NAV_TOGGLES.map((item) => (
@@ -120,6 +137,7 @@ export function StaffSection() {
                     <Switch
                       checked={(member.nav_visibility ?? []).includes(item.key)}
                       onChange={() => handleToggleNav(member, item.key)}
+                      loading={isPending(`nav-${member.id}-${item.key}`)}
                     />
                     <span>{item.label}</span>
                   </label>

@@ -1,12 +1,13 @@
 import { Pencil, Trash2 } from 'lucide-react';
 import { Card } from '../../components/ui/Card.jsx';
+import { Button } from '../../components/ui/Button.jsx';
 import { FoodTypeDot } from '../../components/ui/Badge.jsx';
 import { Switch } from '../../components/ui/Field.jsx';
 import { ProductImage } from './ProductImage.jsx';
 import { formatCurrency } from '../../lib/format.js';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
 
-export function ProductCard({ item, onEdit, onDelete, onToggleAvailability }) {
+export function ProductCard({ item, onEdit, onDelete, onToggleAvailability, availabilityPending, deletePending }) {
   const businessType = useCurrentBusinessType();
   const isRestaurant = businessType.key === 'restaurant';
 
@@ -18,7 +19,12 @@ export function ProductCard({ item, onEdit, onDelete, onToggleAvailability }) {
           {isRestaurant && <FoodTypeDot foodType={item.food_type} />}
           {item.name}
         </div>
-        <Switch checked={!!item.is_available} onChange={() => onToggleAvailability(item)} label="Available" />
+        <Switch
+          checked={!!item.is_available}
+          onChange={() => onToggleAvailability(item)}
+          label="Available"
+          loading={availabilityPending}
+        />
       </div>
       <p className="product-description">{item.description || ''}</p>
       <div className="product-price-row">
@@ -28,12 +34,19 @@ export function ProductCard({ item, onEdit, onDelete, onToggleAvailability }) {
       <div className="product-actions">
         <span className="product-tax">{item.is_available ? 'Available' : 'Unavailable'}</span>
         <div className="product-actions-buttons">
-          <button className="btn btn-ghost btn-icon btn-sm" onClick={() => onEdit(item)} aria-label="Edit">
+          <Button variant="ghost" size="sm" className="btn-icon" onClick={() => onEdit(item)} aria-label="Edit">
             <Pencil size={14} />
-          </button>
-          <button className="btn btn-ghost btn-icon btn-sm" onClick={() => onDelete(item)} aria-label="Delete">
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="btn-icon"
+            onClick={() => onDelete(item)}
+            loading={deletePending}
+            aria-label="Delete"
+          >
             <Trash2 size={14} />
-          </button>
+          </Button>
         </div>
       </div>
     </Card>

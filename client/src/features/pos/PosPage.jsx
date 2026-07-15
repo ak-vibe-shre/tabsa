@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { UtensilsCrossed, Store, Pencil, Trash2 } from 'lucide-react';
 import { api } from '../../lib/apiClient.js';
+import { usePendingSet } from '../../lib/usePendingSet.js';
 import { useAuth } from '../../lib/AuthContext.jsx';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
 import { useToast } from '../../components/ui/ToastContext.jsx';
@@ -32,6 +33,7 @@ export function PosPage() {
   const { user } = useAuth();
   const businessType = useCurrentBusinessType();
   const canManageTables = user?.role === 'owner' || user?.role === 'manager';
+  const { isPending, withPending } = usePendingSet();
 
   async function loadAll() {
     setLoading(true);
@@ -58,51 +60,54 @@ export function PosPage() {
     loadAll();
   }, []);
 
-  async function handleSelectTable(table) {
-    if (table.status === 'available') {
-      try {
-        const order = await api.post('/orders', { table_id: table.id, order_type: 'dine_in' });
-        setTables((prev) => prev.map((t) => (t.id === table.id ? { ...t, status: 'occupied', current_order_id: order.id } : t)));
-        setActiveOrder({ orderId: order.id, table: { ...table, status: 'occupied' } });
-      } catch (err) {
-        toast(err.message, 'error');
+  const handleSelectTable = (table) =>
+    withPending(`table-${table.id}`, async () => {
+      if (table.status === 'available') {
+        try {
+          const order = await api.post('/orders', { table_id: table.id, order_type: 'dine_in' });
+          setTables((prev) => prev.map((t) => (t.id === table.id ? { ...t, status: 'occupied', current_order_id: order.id } : t)));
+          setActiveOrder({ orderId: order.id, table: { ...table, status: 'occupied' } });
+        } catch (err) {
+          toast(err.message, 'error');
+        }
+      } else if (table.current_order_id) {
+        setActiveOrder({ orderId: table.current_order_id, table });
       }
-    } else if (table.current_order_id) {
-      setActiveOrder({ orderId: table.current_order_id, table });
-    }
-  }
+    })();
 
-  async function handleNewTakeaway() {
+  const handleNewTakeaway = withPending('new-takeaway', async () => {
     try {
       const order = await api.post('/orders', { order_type: 'takeaway' });
       setActiveOrder({ orderId: order.id, table: null });
     } catch (err) {
       toast(err.message, 'error');
     }
-  }
+  });
 
-  async function handleLockTable(table) {
-    const note = window.prompt(`Lock ${table.label} — add a note (optional):`, '');
-    if (note === null) return;
-    try {
-      const updated = await api.post(`/tables/${table.id}/lock`, { note: note || undefined });
-      setTables((prev) => prev.map((t) => (t.id === table.id ? updated : t)));
-      toast(`${table.label} locked`, 'success');
-    } catch (err) {
-      toast(err.message, 'error');
-    }
-  }
+  const handleLockTable = (table) =>
+    withPending(`table-${table.id}`, async () => {
+      const note = window.prompt(`Lock ${table.label} — add a note (optional):`, '');
+      if (note === null) return;
+      try {
+        const updated = await api.post(`/tables/${table.id}/lock`, { note: note || undefined });
+        setTables((prev) => prev.map((t) => (t.id === table.id ? updated : t)));
+        toast(`${table.label} locked`, 'success');
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    })();
 
-  async function handleReleaseTable(table) {
-    if (!confirm(`Release ${table.label}?${table.lock_note ? ` (${table.lock_note})` : ''}`)) return;
-    try {
-      const updated = await api.post(`/tables/${table.id}/release`);
-      setTables((prev) => prev.map((t) => (t.id === table.id ? updated : t)));
-      toast(`${table.label} released`, 'success');
-    } catch (err) {
-      toast(err.message, 'error');
-    }
-  }
+  const handleReleaseTable = (table) =>
+    withPending(`table-${table.id}`, async () => {
+      if (!confirm(`Release ${table.label}?${table.lock_note ? ` (${table.lock_note})` : ''}`)) return;
+      try {
+        const updated = await api.post(`/tables/${table.id}/release`);
+        setTables((prev) => prev.map((t) => (t.id === table.id ? updated : t)));
+        toast(`${table.label} released`, 'success');
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    })();
 
   function openAddTable() {
     setEditingTable(null);
@@ -114,7 +119,10 @@ export function PosPage() {
     setTableFormOpen(true);
   }
 
+  const [tableFormSubmitting, setTableFormSubmitting] = useState(false);
+
   async function handleSubmitTable(payload) {
+    setTableFormSubmitting(true);
     try {
       if (editingTable) {
         const updated = await api.patch(`/tables/${editingTable.id}`, payload);
@@ -128,18 +136,22 @@ export function PosPage() {
       setTableFormOpen(false);
     } catch (err) {
       toast(err.message, 'error');
+    } finally {
+      setTableFormSubmitting(false);
     }
   }
 
   async function handleDeleteTable(table) {
     if (!confirm(`Delete "${table.label}"?`)) return;
-    try {
-      await api.del(`/tables/${table.id}`);
-      setTables((prev) => prev.filter((t) => t.id !== table.id));
-      toast('Table deleted', 'success');
-    } catch (err) {
-      toast(err.message, 'error');
-    }
+    await withPending(`table-del-${table.id}`, async () => {
+      try {
+        await api.del(`/tables/${table.id}`);
+        setTables((prev) => prev.filter((t) => t.id !== table.id));
+        toast('Table deleted', 'success');
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    })();
   }
 
   return (
@@ -167,7 +179,9 @@ History
                   Manage {businessType.tableNoun.toLowerCase()}
                 </Button>
               )}
-              <Button onClick={handleNewTakeaway}>+ New takeaway order</Button>
+              <Button onClick={handleNewTakeaway} loading={isPending('new-takeaway')}>
+                + New takeaway order
+              </Button>
             </div>
           </div>
 
@@ -185,7 +199,13 @@ History
               action={canManageTables ? <Button onClick={openAddTable}>+ Add {businessType.tableNoun.slice(0, -1).toLowerCase()}</Button> : null}
             />
           ) : (
-            <TableGrid tables={tables} onSelect={handleSelectTable} onLock={handleLockTable} onRelease={handleReleaseTable} />
+            <TableGrid
+              tables={tables}
+              onSelect={handleSelectTable}
+              onLock={handleLockTable}
+              onRelease={handleReleaseTable}
+              isPending={(id) => isPending(`table-${id}`)}
+            />
           )}
 
           {takeawayOrders.length > 0 && (
@@ -244,12 +264,19 @@ History
                     {table.status}
                   </Badge>
                   <div className="manage-tables-actions">
-                    <button className="btn btn-ghost btn-icon btn-sm" onClick={() => openEditTable(table)} aria-label="Edit">
+                    <Button variant="ghost" size="sm" className="btn-icon" onClick={() => openEditTable(table)} aria-label="Edit">
                       <Pencil size={14} />
-                    </button>
-                    <button className="btn btn-ghost btn-icon btn-sm" onClick={() => handleDeleteTable(table)} aria-label="Delete">
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="btn-icon"
+                      onClick={() => handleDeleteTable(table)}
+                      loading={isPending(`table-del-${table.id}`)}
+                      aria-label="Delete"
+                    >
                       <Trash2 size={14} />
-                    </button>
+                    </Button>
                   </div>
                 </Card>
               ))}
@@ -268,6 +295,7 @@ History
           submitLabel={editingTable ? 'Save changes' : `Add ${businessType.tableNoun.slice(0, -1).toLowerCase()}`}
           onSubmit={handleSubmitTable}
           onCancel={() => setTableFormOpen(false)}
+          submitting={tableFormSubmitting}
         />
       </Modal>
     </div>

@@ -3,9 +3,11 @@ import { X, Trash2 } from 'lucide-react';
 import { Drawer } from '../../components/ui/Drawer.jsx';
 import { Badge } from '../../components/ui/Badge.jsx';
 import { Button } from '../../components/ui/Button.jsx';
+import { Spinner } from '../../components/ui/Spinner.jsx';
 import { FoodTypeDot } from '../../components/ui/Badge.jsx';
 import { useToast } from '../../components/ui/ToastContext.jsx';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
+import { usePendingSet } from '../../lib/usePendingSet.js';
 import { usePosOrder } from './usePosOrder.js';
 import { BillModal } from './BillModal.jsx';
 import { formatCurrency, splitGst } from '../../lib/format.js';
@@ -18,6 +20,7 @@ export function OrderBuilder({ orderId, table, categories, products, onClose, on
   const { order, addItem, setItemQuantity, removeItem, bill, pay, cancel } = usePosOrder(orderId);
   const [activeCategory, setActiveCategory] = useState(null);
   const [billModalOpen, setBillModalOpen] = useState(false);
+  const { isPending, withPending } = usePendingSet();
 
   const visibleProducts = useMemo(() => {
     const available = products.filter((m) => m.is_available);
@@ -30,30 +33,41 @@ export function OrderBuilder({ orderId, table, categories, products, onClose, on
   const isBilled = order.status === 'billed';
   const { cgst, sgst } = splitGst(order.tax_total);
 
-  async function handleAdd(item) {
-    try {
-      await addItem(item.id);
-    } catch (err) {
-      toast(err.message, 'error');
-    }
-  }
+  const handleAdd = (item) =>
+    withPending(`add-${item.id}`, async () => {
+      try {
+        await addItem(item.id);
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    })();
 
-  async function handleQuantityChange(item, delta) {
-    try {
-      await setItemQuantity(item.id, item.quantity + delta);
-    } catch (err) {
-      toast(err.message, 'error');
-    }
-  }
+  const handleQuantityChange = (item, delta) =>
+    withPending(`qty-${item.id}`, async () => {
+      try {
+        await setItemQuantity(item.id, item.quantity + delta);
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    })();
 
-  async function handleBill() {
+  const handleRemove = (item) =>
+    withPending(`qty-${item.id}`, async () => {
+      try {
+        await removeItem(item.id);
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    })();
+
+  const handleBill = withPending('bill', async () => {
     try {
       await bill();
       setBillModalOpen(true);
     } catch (err) {
       toast(err.message, 'error');
     }
-  }
+  });
 
   async function handleConfirmPayment(method) {
     try {
@@ -67,7 +81,7 @@ export function OrderBuilder({ orderId, table, categories, products, onClose, on
     }
   }
 
-  async function handleCancel() {
+  const handleCancel = withPending('cancel', async () => {
     if (!confirm('Cancel this order?')) return;
     try {
       await cancel();
@@ -77,7 +91,7 @@ export function OrderBuilder({ orderId, table, categories, products, onClose, on
     } catch (err) {
       toast(err.message, 'error');
     }
-  }
+  });
 
   return (
     <>
@@ -116,15 +130,22 @@ export function OrderBuilder({ orderId, table, categories, products, onClose, on
                   ))}
                 </div>
                 <div className="order-menu-list">
-                  {visibleProducts.map((item) => (
-                    <div key={item.id} className="order-menu-item" onClick={() => handleAdd(item)}>
-                      <span className="order-menu-item-name">
-                        {businessType.key === 'restaurant' && item.food_type && <FoodTypeDot foodType={item.food_type} />}
-                        {item.name}
-                      </span>
-                      <span className="tabular-nums">{formatCurrency(item.price)}</span>
-                    </div>
-                  ))}
+                  {visibleProducts.map((item) => {
+                    const adding = isPending(`add-${item.id}`);
+                    return (
+                      <div
+                        key={item.id}
+                        className={`order-menu-item${adding ? ' order-menu-item-pending' : ''}`}
+                        onClick={() => !adding && handleAdd(item)}
+                      >
+                        <span className="order-menu-item-name">
+                          {businessType.key === 'restaurant' && item.food_type && <FoodTypeDot foodType={item.food_type} />}
+                          {item.name}
+                        </span>
+                        {adding ? <Spinner size="sm" /> : <span className="tabular-nums">{formatCurrency(item.price)}</span>}
+                      </div>
+                    );
+                  })}
                 </div>
               </>
             )}
@@ -136,32 +157,42 @@ export function OrderBuilder({ orderId, table, categories, products, onClose, on
               {order.items.length === 0 ? (
                 <p style={{ color: 'var(--color-text-muted)' }}>No items added yet. Tap a {businessType.productNoun.singular.toLowerCase()} to add it.</p>
               ) : (
-                order.items.map((item) => (
-                  <div key={item.id} className="order-cart-row">
-                    <span className="order-cart-row-name">{item.item_name_snapshot}</span>
-                    {isOpen ? (
-                      <div className="qty-stepper">
-                        <button type="button" onClick={() => handleQuantityChange(item, -1)}>
-                          −
-                        </button>
-                        <span className="tabular-nums">{item.quantity}</span>
-                        <button type="button" onClick={() => handleQuantityChange(item, 1)}>
-                          +
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="tabular-nums">× {item.quantity}</span>
-                    )}
-                    <span className="tabular-nums" style={{ minWidth: '72px', textAlign: 'right' }}>
-                      {formatCurrency(item.unit_price * item.quantity)}
-                    </span>
-                    {isOpen && (
-                      <button className="btn btn-ghost btn-icon btn-sm" onClick={() => removeItem(item.id)} aria-label="Remove">
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                  </div>
-                ))
+                order.items.map((item) => {
+                  const itemPending = isPending(`qty-${item.id}`);
+                  return (
+                    <div key={item.id} className="order-cart-row">
+                      <span className="order-cart-row-name">{item.item_name_snapshot}</span>
+                      {isOpen ? (
+                        <div className="qty-stepper">
+                          <button type="button" disabled={itemPending} onClick={() => handleQuantityChange(item, -1)}>
+                            −
+                          </button>
+                          {itemPending ? <Spinner size="sm" /> : <span className="tabular-nums">{item.quantity}</span>}
+                          <button type="button" disabled={itemPending} onClick={() => handleQuantityChange(item, 1)}>
+                            +
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="tabular-nums">× {item.quantity}</span>
+                      )}
+                      <span className="tabular-nums" style={{ minWidth: '72px', textAlign: 'right' }}>
+                        {formatCurrency(item.unit_price * item.quantity)}
+                      </span>
+                      {isOpen && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="btn-icon"
+                          onClick={() => handleRemove(item)}
+                          loading={itemPending}
+                          aria-label="Remove"
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })
               )}
 
               <div className="order-totals">
@@ -188,17 +219,17 @@ export function OrderBuilder({ orderId, table, categories, products, onClose, on
           <div className="order-builder-footer">
             {isOpen && (
               <>
-                <Button variant="danger" onClick={handleCancel}>
+                <Button variant="danger" onClick={handleCancel} loading={isPending('cancel')}>
                   Cancel order
                 </Button>
-                <Button onClick={handleBill} disabled={order.items.length === 0}>
+                <Button onClick={handleBill} disabled={order.items.length === 0} loading={isPending('bill')}>
                   Generate bill
                 </Button>
               </>
             )}
             {isBilled && (
               <>
-                <Button variant="danger" onClick={handleCancel}>
+                <Button variant="danger" onClick={handleCancel} loading={isPending('cancel')}>
                   Cancel order
                 </Button>
                 <Button onClick={() => setBillModalOpen(true)}>Collect payment</Button>

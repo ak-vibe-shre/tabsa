@@ -1,3 +1,5 @@
+import { Spinner } from './Spinner.jsx';
+
 export function Field({ label, children }) {
   return (
     <label className="field">
@@ -23,11 +25,12 @@ export function Textarea(props) {
   return <textarea className="textarea" {...props} />;
 }
 
-export function Switch({ checked, onChange, label }) {
+export function Switch({ checked, onChange, label, loading = false }) {
   return (
-    <label className="switch" title={label}>
-      <input type="checkbox" checked={checked} onChange={onChange} />
+    <label className={`switch${loading ? ' switch-loading' : ''}`} title={label}>
+      <input type="checkbox" checked={checked} onChange={onChange} disabled={loading} />
       <span className="switch-track" />
+      {loading && <Spinner size="sm" />}
     </label>
   );
 }

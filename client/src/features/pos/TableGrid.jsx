@@ -1,6 +1,7 @@
 import { Lock } from 'lucide-react';
 import { Card } from '../../components/ui/Card.jsx';
 import { Badge } from '../../components/ui/Badge.jsx';
+import { Spinner } from '../../components/ui/Spinner.jsx';
 import { TableIcon } from './TableIcon.jsx';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
 
@@ -11,7 +12,7 @@ const STATUS_META = {
   locked: { label: 'Locked', badge: 'neutral' },
 };
 
-export function TableGrid({ tables, onSelect, onLock, onRelease }) {
+export function TableGrid({ tables, onSelect, onLock, onRelease, isPending }) {
   const businessType = useCurrentBusinessType();
   return (
     <div className="table-grid">
@@ -19,17 +20,24 @@ export function TableGrid({ tables, onSelect, onLock, onRelease }) {
         const isLocked = table.status === 'locked';
         const isAvailable = table.status === 'available';
         const meta = STATUS_META[table.status];
+        const pending = isPending?.(table.id);
         return (
           <Card
             key={table.id}
             interactive
-            className={`table-card table-card-${table.status}`}
-            onClick={() => (isLocked ? onRelease(table) : onSelect(table))}
+            className={`table-card table-card-${table.status}${pending ? ' table-card-pending' : ''}`}
+            onClick={() => !pending && (isLocked ? onRelease(table) : onSelect(table))}
           >
+            {pending && (
+              <div className="table-card-overlay">
+                <Spinner size="md" />
+              </div>
+            )}
             {isAvailable && (
               <button
                 className="table-lock-btn"
                 title="Lock table"
+                disabled={pending}
                 onClick={(e) => {
                   e.stopPropagation();
                   onLock(table);

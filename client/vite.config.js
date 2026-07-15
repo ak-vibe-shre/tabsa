@@ -26,7 +26,9 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        // 127.0.0.1, not localhost — avoids IPv6 (::1) resolution failing to
+        // connect since the backend only binds IPv4 0.0.0.0.
+        target: 'http://127.0.0.1:4000',
         changeOrigin: true,
       },
     },

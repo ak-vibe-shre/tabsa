@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { X, Plus } from 'lucide-react';
+import { Spinner } from '../../components/ui/Spinner.jsx';
 
-export function CategoryList({ categories, selectedId, onSelect, onAdd, onDelete }) {
+export function CategoryList({ categories, selectedId, onSelect, onAdd, onDelete, isDeleting }) {
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
 
@@ -22,26 +23,29 @@ export function CategoryList({ categories, selectedId, onSelect, onAdd, onDelete
       >
         All items
       </button>
-      {categories.map((c) => (
-        <button
-          key={c.id}
-          className={`category-pill${selectedId === c.id ? ' active' : ''}`}
-          onClick={() => onSelect(c.id)}
-          type="button"
-        >
-          {c.name}
-          <span
-            className="category-pill-delete"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(c);
-            }}
-            title="Delete category"
+      {categories.map((c) => {
+        const deleting = isDeleting?.(c.id);
+        return (
+          <button
+            key={c.id}
+            className={`category-pill${selectedId === c.id ? ' active' : ''}`}
+            onClick={() => onSelect(c.id)}
+            type="button"
           >
-            <X size={12} />
-          </span>
-        </button>
-      ))}
+            {c.name}
+            <span
+              className="category-pill-delete"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!deleting) onDelete(c);
+              }}
+              title="Delete category"
+            >
+              {deleting ? <Spinner size="sm" /> : <X size={12} />}
+            </span>
+          </button>
+        );
+      })}
       {adding ? (
         <form onSubmit={submitAdd} style={{ display: 'inline-flex', gap: '4px' }}>
           <input

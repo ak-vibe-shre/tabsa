@@ -3,7 +3,7 @@ import { Field, Input } from '../../components/ui/Field.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
 
-export function TableForm({ initialValues, onSubmit, onCancel, submitLabel = 'Save' }) {
+export function TableForm({ initialValues, onSubmit, onCancel, submitLabel = 'Save', submitting = false }) {
   const businessType = useCurrentBusinessType();
   const [form, setForm] = useState({
     label: initialValues?.label ?? '',
@@ -36,10 +36,12 @@ export function TableForm({ initialValues, onSubmit, onCancel, submitLabel = 'Sa
         )}
       </div>
       <div className="modal-footer" style={{ padding: 0, marginTop: 'var(--space-6)', borderTop: 'none' }}>
-        <Button type="button" variant="secondary" onClick={onCancel}>
+        <Button type="button" variant="secondary" onClick={onCancel} disabled={submitting}>
           Cancel
         </Button>
-        <Button type="submit">{submitLabel}</Button>
+        <Button type="submit" loading={submitting}>
+          {submitLabel}
+        </Button>
       </div>
     </form>
   );
