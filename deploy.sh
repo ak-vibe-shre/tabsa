@@ -1,24 +1,22 @@
 #!/usr/bin/env bash
-# Run on the VPS to ship the latest main to production.
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/home/tabsa}"
 BRANCH="${BRANCH:-main}"
 
+echo "==> Deploying Tabsa"
+
 cd "$APP_DIR"
 
-echo "==> Pulling latest ($BRANCH)"
 git fetch origin "$BRANCH"
 git reset --hard "origin/$BRANCH"
 
-echo "==> Stopping previous containers"
-docker compose down
+echo "==> Updating containers"
+docker compose up -d --build --remove-orphans
 
-echo "==> Building containers (no cache)"
-docker compose build 
+echo "==> Cleaning unused images"
+docker image prune -f
 
-echo "==> Starting containers"
-docker compose up -d
+echo "==> Deployment complete"
 
-echo "==> Done"
 docker compose ps

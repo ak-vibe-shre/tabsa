@@ -11,7 +11,10 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY server/package.json server/package.json
 COPY client/package.json client/package.json
-RUN npm ci
+# --workspace=client scopes both the install and lifecycle scripts to the
+# client package, so server's postinstall (`prisma generate`, which needs
+# server/prisma/schema.prisma — not copied into this build) never runs here.
+RUN npm ci --workspace=client
 
 COPY client client
 RUN npm run build -w client

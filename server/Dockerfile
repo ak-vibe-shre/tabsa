@@ -8,8 +8,9 @@ ENV NODE_ENV=production
 ENV PORT=4000
 
 # python3/make/g++ let native deps (better-sqlite3, bcrypt) build from source
-# if no prebuilt binary matches this platform.
-RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ \
+# if no prebuilt binary matches this platform. openssl is required by
+# Prisma's query engine at runtime (bookworm-slim doesn't include it).
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ openssl \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
