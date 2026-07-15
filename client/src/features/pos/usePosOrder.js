@@ -56,8 +56,12 @@ export function usePosOrder(orderId, { onChanged } = {}) {
   }, [orderId, onChanged]);
 
   const pay = useCallback(
-    async (paymentMethod) => {
-      const data = await api.post(`/orders/${orderId}/pay`, { payment_method: paymentMethod });
+    async (paymentMethod, { name, phone } = {}) => {
+      const data = await api.post(`/orders/${orderId}/pay`, {
+        payment_method: paymentMethod,
+        customer_name: name,
+        customer_phone: phone,
+      });
       setOrder(data);
       onChanged?.(data);
       return data;

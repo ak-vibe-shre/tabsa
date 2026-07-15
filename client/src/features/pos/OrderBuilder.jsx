@@ -69,9 +69,9 @@ export function OrderBuilder({ orderId, table, categories, products, onClose, on
     }
   });
 
-  async function handleConfirmPayment(method) {
+  async function handleConfirmPayment(method, customerInfo) {
     try {
-      await pay(method);
+      await pay(method, customerInfo);
       toast('Payment recorded', 'success');
       setBillModalOpen(false);
       onSettled();

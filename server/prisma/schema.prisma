@@ -251,6 +251,8 @@ model Order {
   tax_total      Float          @default(0)
   grand_total    Float          @default(0)
   payment_method PaymentMethod?
+  customer_name  String?
+  customer_phone String?
   billed_at      DateTime?
   paid_at        DateTime?
   cancelled_at   DateTime?

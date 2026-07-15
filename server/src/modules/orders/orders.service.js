@@ -126,14 +126,24 @@ export async function billOrder(restaurantId, orderId) {
   });
 }
 
-export async function payOrder(restaurantId, orderId, { payment_method }) {
+export async function payOrder(restaurantId, orderId, { payment_method, customer_name, customer_phone }) {
   return prisma.$transaction(async (tx) => {
     const order = await getOrderRow(orderId, restaurantId, tx);
     if (!order) throw new HttpError(404, 'Order not found');
     if (order.status !== 'billed') throw new HttpError(400, `Order must be billed before it can be paid (currently ${order.status})`);
     if (!['cash', 'card', 'upi'].includes(payment_method)) throw new HttpError(400, 'payment_method must be cash, card, or upi');
 
-    await transitionOrder(orderId, { status: 'paid', payment_method, paid_at: new Date() }, tx);
+    await transitionOrder(
+      orderId,
+      {
+        status: 'paid',
+        payment_method,
+        paid_at: new Date(),
+        customer_name: customer_name?.trim() || null,
+        customer_phone: customer_phone?.trim() || null,
+      },
+      tx
+    );
     if (order.table_id) await setTableStatus(order.table_id, 'available', null, tx);
     return getOrderWithItems(orderId, restaurantId, tx);
   });

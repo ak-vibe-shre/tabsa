@@ -1,9 +1,10 @@
-import { Printer } from 'lucide-react';
+import { Printer, FileText } from 'lucide-react';
 import { Modal } from '../../components/ui/Modal.jsx';
 import { Badge } from '../../components/ui/Badge.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { formatCurrency, formatDateShort, formatTime, splitGst } from '../../lib/format.js';
 import { printReceipt } from '../../lib/printReceipt.js';
+import { printInvoiceA4 } from '../../lib/printInvoiceA4.js';
 import { useSettings } from '../../lib/SettingsContext.jsx';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
 
@@ -22,15 +23,24 @@ export function OrderDetailModal({ order, open, onClose }) {
     printReceipt(order, { business: settings ?? {}, businessType });
   }
 
+  function handlePrintA4() {
+    printInvoiceA4(order, { business: settings ?? {}, businessType });
+  }
+
   return (
     <Modal
       open={open}
       onClose={onClose}
       title={`Order #${order.id}`}
       footer={
-        <Button variant="secondary" onClick={handlePrint} style={{ width: '100%' }}>
-          <Printer size={16} /> Print invoice
-        </Button>
+        <div style={{ display: 'flex', gap: 'var(--space-3)', width: '100%' }}>
+          <Button variant="secondary" onClick={handlePrint} style={{ flex: 1 }}>
+            <Printer size={16} /> Print
+          </Button>
+          <Button variant="secondary" onClick={handlePrintA4} style={{ flex: 1 }}>
+            <FileText size={16} /> Print A4
+          </Button>
+        </div>
       }
     >
       <div>
@@ -70,6 +80,11 @@ export function OrderDetailModal({ order, open, onClose }) {
           </div>
         </div>
 
+        {(order.customer_name || order.customer_phone) && (
+          <p style={{ marginTop: 'var(--space-4)', color: 'var(--color-text-muted)' }}>
+            {[order.customer_name, order.customer_phone].filter(Boolean).join(' · ')}
+          </p>
+        )}
         {order.payment_method && (
           <p style={{ marginTop: 'var(--space-4)', color: 'var(--color-text-muted)' }}>
             Paid via {PAYMENT_LABEL[order.payment_method] ?? order.payment_method} at {formatTime(order.paid_at)}
