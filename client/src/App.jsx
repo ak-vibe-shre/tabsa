@@ -1,6 +1,6 @@
+import { Suspense, lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout.jsx';
-import { DashboardPage } from './features/dashboard/DashboardPage.jsx';
 import { PosPage } from './features/pos/PosPage.jsx';
 import { ProductsPage } from './features/products/ProductsPage.jsx';
 import { InventoryPage } from './features/inventory/InventoryPage.jsx';
@@ -12,6 +12,12 @@ import { AdminRestaurantsPage } from './features/admin/AdminRestaurantsPage.jsx'
 import { AdminPlansPage } from './features/admin/AdminPlansPage.jsx';
 import { RequireAuth, RequireRole } from './lib/RequireAuth.jsx';
 
+// Lazy-loaded so recharts (only used here) splits into its own chunk instead
+// of bloating the main bundle for every page load.
+const DashboardPage = lazy(() =>
+  import('./features/dashboard/DashboardPage.jsx').then((m) => ({ default: m.DashboardPage }))
+);
+
 export default function App() {
   return (
     <Routes>
@@ -22,7 +28,14 @@ export default function App() {
           <Route path="/orders" element={<PosPage />} />
 
           <Route element={<RequireRole roles={['owner', 'manager', 'staff']} navKey="dashboard" redirectTo="/orders" />}>
-            <Route path="/" element={<DashboardPage />} />
+            <Route
+              path="/"
+              element={
+                <Suspense fallback={null}>
+                  <DashboardPage />
+                </Suspense>
+              }
+            />
           </Route>
 
           <Route element={<RequireRole roles={['owner', 'manager', 'staff']} navKey="products" redirectTo="/orders" />}>

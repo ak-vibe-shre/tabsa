@@ -2,6 +2,8 @@
 # TLS for tabsa.in/www.tabsa.in at the edge and forwards here, so this Caddy
 # instance is purely an internal router, not the public-facing SSL endpoint.
 :3000 {
+	encode zstd gzip
+
 	handle /api/* {
 		reverse_proxy 127.0.0.1:4000
 	}
