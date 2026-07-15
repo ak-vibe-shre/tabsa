@@ -10,7 +10,7 @@ import { EmptyState } from '../../components/ui/EmptyState.jsx';
 import { Skeleton } from '../../components/ui/Skeleton.jsx';
 import { Select, Input } from '../../components/ui/Field.jsx';
 import { OrderDetailModal } from './OrderDetailModal.jsx';
-import { formatCurrency, formatTime } from '../../lib/format.js';
+import { formatCurrency, formatDateShort, formatTime } from '../../lib/format.js';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
 import { useSettings } from '../../lib/SettingsContext.jsx';
 import { printReceipt } from '../../lib/printReceipt.js';
@@ -18,6 +18,11 @@ import { printReceipt } from '../../lib/printReceipt.js';
 const STATUS_VARIANT = { open: 'primary', billed: 'warning', paid: 'success', cancelled: 'danger' };
 
 const PAGE_SIZE = 20;
+
+function customerLabel(order) {
+  const parts = [order.customer_name, order.customer_phone].filter(Boolean);
+  return parts.length ? parts.join(' · ') : '—';
+}
 
 export function OrderHistory() {
   const businessType = useCurrentBusinessType();
@@ -111,7 +116,8 @@ export function OrderHistory() {
           <div className="order-history-header-row">
             <span>ID</span>
             <span>{businessType.tableNoun.slice(0, -1)}</span>
-            <span>Time</span>
+            <span>Customer</span>
+            <span>Date &amp; time</span>
             <span>Items</span>
             <span>Status</span>
             <span>Total</span>
@@ -131,7 +137,12 @@ export function OrderHistory() {
                 >
                   <span>#{order.id}</span>
                   <span>{order.table_label ?? 'Takeaway'}</span>
-                  <span>{formatTime(order.created_at)}</span>
+                  <span className="order-history-customer" title={customerLabel(order)}>
+                    {customerLabel(order)}
+                  </span>
+                  <span>
+                    {formatDateShort(order.created_at)} {formatTime(order.created_at)}
+                  </span>
                   <span>{order.item_count} items</span>
                   <span>
                     <Badge variant={STATUS_VARIANT[order.status]}>{order.status}</Badge>

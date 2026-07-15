@@ -388,6 +388,13 @@
   gap: var(--space-2);
 }
 
+.order-history-customer {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-muted);
+}
+
 .order-history-pagination {
   display: flex;
   align-items: center;
@@ -405,7 +412,7 @@
 
 .order-history-header-row {
   display: grid;
-  grid-template-columns: 80px 1fr 1fr 100px 120px 110px 44px;
+  grid-template-columns: 70px 1fr 1fr 150px 90px 100px 110px 44px;
   gap: var(--space-4);
   padding: 0 var(--space-5);
   font-size: var(--text-xs);
@@ -417,7 +424,7 @@
 
 .order-history-row {
   display: grid;
-  grid-template-columns: 80px 1fr 1fr 100px 120px 110px 44px;
+  grid-template-columns: 70px 1fr 1fr 150px 90px 100px 110px 44px;
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
