@@ -19,4 +19,7 @@ export const api = {
   post: (path, body) => request(path, { method: 'POST', body: JSON.stringify(body ?? {}) }),
   patch: (path, body) => request(path, { method: 'PATCH', body: JSON.stringify(body ?? {}) }),
   del: (path) => request(path, { method: 'DELETE' }),
+  // No Content-Type override — the browser sets multipart/form-data with the
+  // correct boundary itself when the body is a FormData instance.
+  upload: (path, formData) => request(path, { method: 'POST', body: formData, headers: {} }),
 };

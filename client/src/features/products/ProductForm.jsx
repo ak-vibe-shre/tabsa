@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { Upload } from 'lucide-react';
 import { Field, Input, Select, Textarea } from '../../components/ui/Field.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { DynamicField, defaultForField } from '../../components/dynamic/DynamicField.jsx';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
+import { useToast } from '../../components/ui/ToastContext.jsx';
+import { api } from '../../lib/apiClient.js';
+import { ProductImage } from './ProductImage.jsx';
 
 export function ProductForm({ categories, initialValues, onSubmit, onCancel, submitLabel = 'Save item' }) {
   const businessType = useCurrentBusinessType();
   const productFields = businessType.productFields ?? [];
+  const toast = useToast();
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
 
   const [form, setForm] = useState(() => {
     const base = {
@@ -26,6 +33,23 @@ export function ProductForm({ categories, initialValues, onSubmit, onCancel, sub
 
   function update(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  async function handleFileSelect(e) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const { url } = await api.upload('/uploads/image', formData);
+      update('image_url', url);
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setUploading(false);
+    }
   }
 
   function handleSubmit(e) {
@@ -59,13 +83,36 @@ export function ProductForm({ categories, initialValues, onSubmit, onCancel, sub
           </Field>
         </div>
         <div className="form-grid-full">
-          <Field label="Image URL (optional — a default image is used if left blank)">
-            <Input
-              type="url"
-              value={form.image_url}
-              onChange={(e) => update('image_url', e.target.value)}
-              placeholder="https://example.com/image.jpg"
-            />
+          <Field label="Image (optional — a default image is used if left blank)">
+            <div className="product-form-image-row">
+              <div className="product-form-image-preview">
+                <ProductImage imageUrl={form.image_url} alt="Preview" />
+              </div>
+              <div className="product-form-image-controls">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={handleFileSelect}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  loading={uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload size={14} /> Upload image
+                </Button>
+                <Input
+                  type="url"
+                  value={form.image_url}
+                  onChange={(e) => update('image_url', e.target.value)}
+                  placeholder="Or paste an image URL"
+                />
+              </div>
+            </div>
           </Field>
         </div>
         <Field label="Category">

@@ -14,6 +14,7 @@ import { ordersRouter } from './modules/orders/orders.routes.js';
 import { inventoryRouter } from './modules/inventory/inventory.routes.js';
 import { reportsRouter } from './modules/reports/reports.routes.js';
 import { settingsRouter } from './modules/settings/settings.routes.js';
+import { uploadsRouter } from './modules/uploads/uploads.routes.js';
 import { requireAuth, requireRole, requireRestaurantRole, requireNavAccess } from './middleware/requireAuth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -37,6 +38,7 @@ app.use('/api/orders', requireAuth, ordersRouter);
 app.use('/api/inventory', requireAuth, requireNavAccess('inventory'), inventoryRouter);
 app.use('/api/reports', requireAuth, requireNavAccess('dashboard'), reportsRouter);
 app.use('/api/settings', requireAuth, settingsRouter);
+app.use('/api/uploads', requireAuth, uploadsRouter);
 app.use('/api/staff', requireAuth, requireRestaurantRole('owner'), staffRouter);
 
 app.use((req, res) => {
