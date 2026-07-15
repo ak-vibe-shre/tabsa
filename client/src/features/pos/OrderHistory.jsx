@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Receipt, Printer } from 'lucide-react';
+import { Receipt, Printer, ChevronLeft, ChevronRight } from 'lucide-react';
 import { api } from '../../lib/apiClient.js';
 import { usePendingSet } from '../../lib/usePendingSet.js';
 import { useToast } from '../../components/ui/ToastContext.jsx';
@@ -17,28 +17,47 @@ import { printReceipt } from '../../lib/printReceipt.js';
 
 const STATUS_VARIANT = { open: 'primary', billed: 'warning', paid: 'success', cancelled: 'danger' };
 
+const PAGE_SIZE = 20;
+
 export function OrderHistory() {
   const businessType = useCurrentBusinessType();
   const { settings } = useSettings();
   const [orders, setOrders] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+  const [invoiceSearch, setInvoiceSearch] = useState('');
   const [detailOrder, setDetailOrder] = useState(null);
   const toast = useToast();
   const { isPending, withPending } = usePendingSet();
+
+  // Any filter change starts back at page 1 — a stale page number past the
+  // new result set would otherwise silently show an empty list.
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, dateFilter, invoiceSearch]);
 
   useEffect(() => {
     setLoading(true);
     const params = new URLSearchParams();
     if (statusFilter) params.set('status', statusFilter);
     if (dateFilter) params.set('date', dateFilter);
+    if (invoiceSearch) params.set('invoice_number', invoiceSearch);
+    params.set('page', page);
+    params.set('pageSize', PAGE_SIZE);
     api
-      .get(`/orders${params.toString() ? `?${params}` : ''}`)
-      .then(setOrders)
+      .get(`/orders?${params}`)
+      .then((res) => {
+        setOrders(res.orders);
+        setTotal(res.total);
+      })
       .catch((err) => toast(err.message, 'error'))
       .finally(() => setLoading(false));
-  }, [statusFilter, dateFilter]);
+  }, [statusFilter, dateFilter, invoiceSearch, page]);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const openDetail = (order) =>
     withPending(`open-${order.id}`, async () => {
@@ -70,6 +89,13 @@ export function OrderHistory() {
           <option value="cancelled">Cancelled</option>
         </Select>
         <Input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
+        <Input
+          type="text"
+          inputMode="numeric"
+          value={invoiceSearch}
+          onChange={(e) => setInvoiceSearch(e.target.value.replace(/[^0-9]/g, ''))}
+          placeholder="Search invoice #"
+        />
       </div>
 
       {loading ? (
@@ -79,7 +105,7 @@ export function OrderHistory() {
           ))}
         </div>
       ) : orders.length === 0 ? (
-        <EmptyState icon={<Receipt size={28} />} title="No orders found" description="Try a different status or date filter." />
+        <EmptyState icon={<Receipt size={28} />} title="No orders found" description="Try a different status, date, or invoice number." />
       ) : (
         <>
           <div className="order-history-header-row">
@@ -129,6 +155,32 @@ export function OrderHistory() {
                 </Card>
               );
             })}
+          </div>
+
+          <div className="order-history-pagination">
+            <span className="order-history-pagination-summary">
+              {total} order{total === 1 ? '' : 's'} · page {page} of {totalPages}
+            </span>
+            <div className="order-history-pagination-controls">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                aria-label="Previous page"
+              >
+                <ChevronLeft size={14} />
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                aria-label="Next page"
+              >
+                <ChevronRight size={14} />
+              </Button>
+            </div>
           </div>
         </>
       )}

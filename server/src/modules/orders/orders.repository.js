@@ -20,7 +20,11 @@ export async function getOrderWithItems(id, restaurantId, client = prisma) {
   return { ...order, items: await getOrderItems(id, client) };
 }
 
-export async function listOrders(restaurantId, { status, table_id, date } = {}, client = prisma) {
+export async function listOrders(
+  restaurantId,
+  { status, table_id, date, invoice_number, page = 1, pageSize = 20 } = {},
+  client = prisma
+) {
   const where = { restaurant_id: restaurantId };
   if (status) where.status = status;
   if (table_id) where.table_id = table_id;
@@ -30,16 +34,35 @@ export async function listOrders(restaurantId, { status, table_id, date } = {}, 
     lt.setUTCDate(lt.getUTCDate() + 1);
     where.created_at = { gte, lt };
   }
-  const orders = await client.order.findMany({
-    where,
-    include: { table: { select: { label: true } }, _count: { select: { order_items: true } } },
-    orderBy: { created_at: 'desc' },
-  });
-  return orders.map(({ table, _count, ...rest }) => ({
-    ...rest,
-    table_label: table?.label ?? null,
-    item_count: _count.order_items,
-  }));
+  if (invoice_number !== undefined && invoice_number !== '') {
+    const id = Number(invoice_number);
+    where.id = Number.isInteger(id) ? id : -1; // no order can ever have a negative id — yields an empty result set
+  }
+
+  const safePage = Math.max(1, Number(page) || 1);
+  const safePageSize = Math.min(100, Math.max(1, Number(pageSize) || 20));
+
+  const [total, orders] = await Promise.all([
+    client.order.count({ where }),
+    client.order.findMany({
+      where,
+      include: { table: { select: { label: true } }, _count: { select: { order_items: true } } },
+      orderBy: [{ created_at: 'desc' }, { id: 'desc' }],
+      skip: (safePage - 1) * safePageSize,
+      take: safePageSize,
+    }),
+  ]);
+
+  return {
+    orders: orders.map(({ table, _count, ...rest }) => ({
+      ...rest,
+      table_label: table?.label ?? null,
+      item_count: _count.order_items,
+    })),
+    total,
+    page: safePage,
+    pageSize: safePageSize,
+  };
 }
 
 export async function insertOrder(restaurantId, { table_id, order_type }, client = prisma) {

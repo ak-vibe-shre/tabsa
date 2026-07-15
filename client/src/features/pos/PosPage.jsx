@@ -42,13 +42,13 @@ export function PosPage() {
         api.get('/tables'),
         api.get('/categories'),
         api.get('/products?available=true'),
-        api.get('/orders?status=open'),
-        api.get('/orders?status=billed'),
+        api.get('/orders?status=open&pageSize=100'),
+        api.get('/orders?status=billed&pageSize=100'),
       ]);
       setTables(tablesData);
       setCategories(categoriesData);
       setProducts(productsData);
-      setTakeawayOrders([...openOrders, ...billedOrders].filter((o) => !o.table_id));
+      setTakeawayOrders([...openOrders.orders, ...billedOrders.orders].filter((o) => !o.table_id));
     } catch (err) {
       toast(err.message, 'error');
     } finally {

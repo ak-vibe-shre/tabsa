@@ -388,6 +388,21 @@
   gap: var(--space-2);
 }
 
+.order-history-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+}
+.order-history-pagination-summary {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.order-history-pagination-controls {
+  display: flex;
+  gap: var(--space-2);
+}
+
 .order-history-header-row {
   display: grid;
   grid-template-columns: 80px 1fr 1fr 100px 120px 110px 44px;

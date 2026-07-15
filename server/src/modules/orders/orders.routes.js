@@ -17,8 +17,17 @@ export const ordersRouter = Router();
 ordersRouter.get(
   '/',
   asyncRoute(async (req, res) => {
-    const { status, table_id, date } = req.query;
-    res.json(await listOrders(req.user.restaurantId, { status, table_id: table_id ? Number(table_id) : undefined, date }));
+    const { status, table_id, date, invoice_number, page, pageSize } = req.query;
+    res.json(
+      await listOrders(req.user.restaurantId, {
+        status,
+        table_id: table_id ? Number(table_id) : undefined,
+        date,
+        invoice_number,
+        page,
+        pageSize,
+      })
+    );
   })
 );
 
