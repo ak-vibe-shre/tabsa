@@ -1,29 +1,23 @@
-import db from '../../db/client.js';
+import prisma from '../../db/prisma.js';
 
-function hydrate(row) {
-  if (!row) return null;
-  return { ...row, features: JSON.parse(row.features || '[]') };
+export async function listPlans() {
+  return prisma.plan.findMany({ orderBy: { sort_order: 'asc' } });
 }
 
-export function listPlans() {
-  return db.prepare('SELECT * FROM plans ORDER BY sort_order ASC').all().map(hydrate);
+export async function getPlan(key) {
+  return prisma.plan.findUnique({ where: { key } });
 }
 
-export function getPlan(key) {
-  return hydrate(db.prepare('SELECT * FROM plans WHERE key = ?').get(key));
-}
-
-export function updatePlan(key, { name, price_label, table_limit, features }) {
-  const current = getPlan(key);
+export async function updatePlan(key, { name, price_label, table_limit, features }) {
+  const current = await getPlan(key);
   if (!current) return null;
-  db.prepare(
-    `UPDATE plans SET name = ?, price_label = ?, table_limit = ?, features = ?, updated_at = datetime('now') WHERE key = ?`
-  ).run(
-    name ?? current.name,
-    price_label ?? current.price_label,
-    table_limit !== undefined ? table_limit : current.table_limit,
-    features !== undefined ? JSON.stringify(features) : JSON.stringify(current.features),
-    key
-  );
-  return getPlan(key);
+  return prisma.plan.update({
+    where: { key },
+    data: {
+      name: name ?? current.name,
+      price_label: price_label ?? current.price_label,
+      table_limit: table_limit !== undefined ? table_limit : current.table_limit,
+      features: features !== undefined ? features : current.features,
+    },
+  });
 }

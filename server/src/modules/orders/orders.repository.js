@@ -1,109 +1,103 @@
-import db from '../../db/client.js';
+import prisma from '../../db/prisma.js';
 
-export function getOrderRow(id, restaurantId) {
-  return db
-    .prepare(
-      `SELECT orders.*, dining_tables.label AS table_label
-       FROM orders
-       LEFT JOIN dining_tables ON dining_tables.id = orders.table_id
-       WHERE orders.id = ? AND orders.restaurant_id = ?`
-    )
-    .get(id, restaurantId);
-}
-
-export function getOrderItems(orderId) {
-  return db.prepare('SELECT * FROM order_items WHERE order_id = ? ORDER BY id ASC').all(orderId);
-}
-
-export function getOrderWithItems(id, restaurantId) {
-  const order = getOrderRow(id, restaurantId);
+export async function getOrderRow(id, restaurantId, client = prisma) {
+  const order = await client.order.findFirst({
+    where: { id, restaurant_id: restaurantId },
+    include: { table: { select: { label: true } } },
+  });
   if (!order) return null;
-  return { ...order, items: getOrderItems(id) };
+  const { table, ...rest } = order;
+  return { ...rest, table_label: table?.label ?? null };
 }
 
-export function listOrders(restaurantId, { status, table_id, date } = {}) {
-  let sql = `SELECT orders.*,
-               (SELECT COUNT(*) FROM order_items WHERE order_items.order_id = orders.id) AS item_count,
-               dining_tables.label AS table_label
-             FROM orders
-             LEFT JOIN dining_tables ON dining_tables.id = orders.table_id
-             WHERE orders.restaurant_id = ?`;
-  const params = [restaurantId];
-  if (status) {
-    sql += ' AND orders.status = ?';
-    params.push(status);
-  }
-  if (table_id) {
-    sql += ' AND orders.table_id = ?';
-    params.push(table_id);
-  }
+export async function getOrderItems(orderId, client = prisma) {
+  return client.orderItem.findMany({ where: { order_id: orderId }, orderBy: { id: 'asc' } });
+}
+
+export async function getOrderWithItems(id, restaurantId, client = prisma) {
+  const order = await getOrderRow(id, restaurantId, client);
+  if (!order) return null;
+  return { ...order, items: await getOrderItems(id, client) };
+}
+
+export async function listOrders(restaurantId, { status, table_id, date } = {}, client = prisma) {
+  const where = { restaurant_id: restaurantId };
+  if (status) where.status = status;
+  if (table_id) where.table_id = table_id;
   if (date) {
-    sql += ' AND date(orders.created_at) = date(?)';
-    params.push(date);
+    const gte = new Date(`${date}T00:00:00.000Z`);
+    const lt = new Date(gte);
+    lt.setUTCDate(lt.getUTCDate() + 1);
+    where.created_at = { gte, lt };
   }
-  sql += ' ORDER BY orders.created_at DESC';
-  return db.prepare(sql).all(...params);
+  const orders = await client.order.findMany({
+    where,
+    include: { table: { select: { label: true } }, _count: { select: { order_items: true } } },
+    orderBy: { created_at: 'desc' },
+  });
+  return orders.map(({ table, _count, ...rest }) => ({
+    ...rest,
+    table_label: table?.label ?? null,
+    item_count: _count.order_items,
+  }));
 }
 
-export function insertOrder(restaurantId, { table_id, order_type }) {
-  const { lastInsertRowid } = db
-    .prepare("INSERT INTO orders (restaurant_id, table_id, order_type, status) VALUES (?, ?, ?, 'open')")
-    .run(restaurantId, table_id ?? null, order_type ?? 'dine_in');
-  return getOrderRow(lastInsertRowid, restaurantId);
+export async function insertOrder(restaurantId, { table_id, order_type }, client = prisma) {
+  const order = await client.order.create({
+    data: {
+      restaurant_id: restaurantId,
+      table_id: table_id ?? null,
+      order_type: order_type ?? 'dine_in',
+      status: 'open',
+    },
+  });
+  return getOrderRow(order.id, restaurantId, client);
 }
 
-export function findOrderItemByProduct(orderId, productId) {
-  return db.prepare('SELECT * FROM order_items WHERE order_id = ? AND product_id = ?').get(orderId, productId);
+export async function findOrderItemByProduct(orderId, productId, client = prisma) {
+  return client.orderItem.findFirst({ where: { order_id: orderId, product_id: productId } });
 }
 
-export function insertOrderItem(orderId, { product_id, item_name_snapshot, unit_price, tax_percent, quantity, notes }) {
-  const { lastInsertRowid } = db
-    .prepare(
-      `INSERT INTO order_items (order_id, product_id, item_name_snapshot, unit_price, tax_percent, quantity, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
-    )
-    .run(orderId, product_id, item_name_snapshot, unit_price, tax_percent, quantity, notes ?? null);
-  return db.prepare('SELECT * FROM order_items WHERE id = ?').get(lastInsertRowid);
+export async function insertOrderItem(
+  orderId,
+  { product_id, item_name_snapshot, unit_price, tax_percent, quantity, notes },
+  client = prisma
+) {
+  return client.orderItem.create({
+    data: { order_id: orderId, product_id, item_name_snapshot, unit_price, tax_percent, quantity, notes: notes ?? null },
+  });
 }
 
-export function updateOrderItem(id, { quantity, notes }) {
-  const current = db.prepare('SELECT * FROM order_items WHERE id = ?').get(id);
+export async function updateOrderItem(id, { quantity, notes }, client = prisma) {
+  const current = await client.orderItem.findUnique({ where: { id } });
   if (!current) return null;
-  db.prepare("UPDATE order_items SET quantity = ?, notes = ?, updated_at = datetime('now') WHERE id = ?").run(
-    quantity ?? current.quantity,
-    notes ?? current.notes,
-    id
-  );
-  return db.prepare('SELECT * FROM order_items WHERE id = ?').get(id);
+  return client.orderItem.update({
+    where: { id },
+    data: { quantity: quantity ?? current.quantity, notes: notes ?? current.notes },
+  });
 }
 
-export function deleteOrderItem(id) {
-  const result = db.prepare('DELETE FROM order_items WHERE id = ?').run(id);
-  return result.changes > 0;
+export async function deleteOrderItem(id, client = prisma) {
+  const { count } = await client.orderItem.deleteMany({ where: { id } });
+  return count > 0;
 }
 
-export function updateOrderTotals(orderId, { subtotal, tax_total, grand_total }) {
-  db.prepare(
-    "UPDATE orders SET subtotal = ?, tax_total = ?, grand_total = ?, updated_at = datetime('now') WHERE id = ?"
-  ).run(subtotal, tax_total, grand_total, orderId);
+export async function updateOrderTotals(orderId, { subtotal, tax_total, grand_total }, client = prisma) {
+  await client.order.update({ where: { id: orderId }, data: { subtotal, tax_total, grand_total } });
 }
 
-export function transitionOrder(orderId, fields) {
-  const sets = Object.keys(fields)
-    .map((key) => `${key} = ?`)
-    .join(', ');
-  const values = Object.values(fields);
-  db.prepare(`UPDATE orders SET ${sets}, updated_at = datetime('now') WHERE id = ?`).run(...values, orderId);
-  return db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
+export async function transitionOrder(orderId, fields, client = prisma) {
+  return client.order.update({ where: { id: orderId }, data: fields });
 }
 
-export function setTableStatus(tableId, status, currentOrderId) {
+export async function setTableStatus(tableId, status, currentOrderId, client = prisma) {
   if (tableId == null) return;
-  db.prepare(
-    "UPDATE dining_tables SET status = ?, current_order_id = ?, updated_at = datetime('now') WHERE id = ?"
-  ).run(status, currentOrderId ?? null, tableId);
+  await client.diningTable.update({
+    where: { id: tableId },
+    data: { status, current_order_id: currentOrderId ?? null },
+  });
 }
 
-export function getTableRow(id, restaurantId) {
-  return db.prepare('SELECT * FROM dining_tables WHERE id = ? AND restaurant_id = ?').get(id, restaurantId);
+export async function getTableRow(id, restaurantId, client = prisma) {
+  return client.diningTable.findFirst({ where: { id, restaurant_id: restaurantId } });
 }

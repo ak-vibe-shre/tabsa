@@ -10,14 +10,14 @@ const requireManage = requireRestaurantRole('owner', 'manager');
 tablesRouter.get(
   '/',
   asyncRoute(async (req, res) => {
-    res.json(listTables(req.user.restaurantId));
+    res.json(await listTables(req.user.restaurantId));
   })
 );
 
 tablesRouter.get(
   '/usage',
   asyncRoute(async (req, res) => {
-    res.json(getTableUsage(req.user.restaurantId));
+    res.json(await getTableUsage(req.user.restaurantId));
   })
 );
 
@@ -28,7 +28,7 @@ tablesRouter.post(
     const { label } = req.body;
     if (!label) throw new HttpError(400, 'label is required');
     try {
-      res.status(201).json(createTable(req.user.restaurantId, req.body));
+      res.status(201).json(await createTable(req.user.restaurantId, req.body));
     } catch (err) {
       throw new HttpError(409, err.message);
     }
@@ -39,7 +39,7 @@ tablesRouter.patch(
   '/:id',
   requireManage,
   asyncRoute(async (req, res) => {
-    const updated = updateTable(Number(req.params.id), req.user.restaurantId, req.body);
+    const updated = await updateTable(Number(req.params.id), req.user.restaurantId, req.body);
     if (!updated) throw new HttpError(404, 'Table not found');
     res.json(updated);
   })
@@ -49,7 +49,7 @@ tablesRouter.delete(
   '/:id',
   requireManage,
   asyncRoute(async (req, res) => {
-    const deleted = deleteTable(Number(req.params.id), req.user.restaurantId);
+    const deleted = await deleteTable(Number(req.params.id), req.user.restaurantId);
     if (!deleted) throw new HttpError(404, 'Table not found');
     res.status(204).end();
   })
@@ -59,7 +59,7 @@ tablesRouter.post(
   '/:id/lock',
   asyncRoute(async (req, res) => {
     try {
-      const table = lockTable(Number(req.params.id), req.user.restaurantId, req.body?.note);
+      const table = await lockTable(Number(req.params.id), req.user.restaurantId, req.body?.note);
       if (!table) throw new HttpError(404, 'Table not found');
       res.json(table);
     } catch (err) {
@@ -73,7 +73,7 @@ tablesRouter.post(
   '/:id/release',
   asyncRoute(async (req, res) => {
     try {
-      const table = releaseTable(Number(req.params.id), req.user.restaurantId);
+      const table = await releaseTable(Number(req.params.id), req.user.restaurantId);
       if (!table) throw new HttpError(404, 'Table not found');
       res.json(table);
     } catch (err) {

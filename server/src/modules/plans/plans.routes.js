@@ -9,7 +9,7 @@ export const plansRouter = Router();
 plansRouter.get(
   '/',
   asyncRoute(async (req, res) => {
-    res.json(listPlans());
+    res.json(await listPlans());
   })
 );
 
@@ -24,7 +24,7 @@ plansRouter.patch(
     if (features !== undefined && !Array.isArray(features)) {
       throw new HttpError(400, 'features must be an array of strings');
     }
-    const updated = updatePlan(req.params.key, req.body);
+    const updated = await updatePlan(req.params.key, req.body);
     if (!updated) throw new HttpError(404, 'Plan not found');
     res.json(updated);
   })

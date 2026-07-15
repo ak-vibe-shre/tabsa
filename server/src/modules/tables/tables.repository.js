@@ -1,66 +1,63 @@
-import db from '../../db/client.js';
+import prisma from '../../db/prisma.js';
 import { getTableLimit } from '../../lib/planLimits.js';
 
-export function listTables(restaurantId) {
-  return db.prepare('SELECT * FROM dining_tables WHERE restaurant_id = ? ORDER BY label ASC').all(restaurantId);
+export async function listTables(restaurantId) {
+  return prisma.diningTable.findMany({ where: { restaurant_id: restaurantId }, orderBy: { label: 'asc' } });
 }
 
-export function getTable(id, restaurantId) {
-  return db.prepare('SELECT * FROM dining_tables WHERE id = ? AND restaurant_id = ?').get(id, restaurantId);
+export async function getTable(id, restaurantId) {
+  return prisma.diningTable.findFirst({ where: { id, restaurant_id: restaurantId } });
 }
 
-export function getTableUsage(restaurantId) {
-  const restaurant = db.prepare('SELECT subscription_plan FROM restaurants WHERE id = ?').get(restaurantId);
+export async function getTableUsage(restaurantId) {
+  const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
   const plan = restaurant?.subscription_plan ?? 'starter';
-  const { count } = db.prepare('SELECT COUNT(*) as count FROM dining_tables WHERE restaurant_id = ?').get(restaurantId);
-  return { plan, count, limit: getTableLimit(plan) };
+  const count = await prisma.diningTable.count({ where: { restaurant_id: restaurantId } });
+  return { plan, count, limit: await getTableLimit(plan) };
 }
 
-export function createTable(restaurantId, { label, seats = 4 }) {
-  const usage = getTableUsage(restaurantId);
+export async function createTable(restaurantId, { label, seats = 4 }) {
+  const usage = await getTableUsage(restaurantId);
   if (usage.limit != null && usage.count >= usage.limit) {
     throw new Error(`Table limit reached for the ${usage.plan} plan (${usage.limit} tables). Upgrade to add more tables.`);
   }
-  const { lastInsertRowid } = db
-    .prepare('INSERT INTO dining_tables (restaurant_id, label, seats) VALUES (?, ?, ?)')
-    .run(restaurantId, label, seats);
-  return getTable(lastInsertRowid, restaurantId);
+  return prisma.diningTable.create({ data: { restaurant_id: restaurantId, label, seats } });
 }
 
-export function updateTable(id, restaurantId, { label, seats }) {
-  const current = getTable(id, restaurantId);
+export async function updateTable(id, restaurantId, { label, seats }) {
+  const current = await getTable(id, restaurantId);
   if (!current) return null;
-  db.prepare(
-    "UPDATE dining_tables SET label = ?, seats = ?, updated_at = datetime('now') WHERE id = ? AND restaurant_id = ?"
-  ).run(label ?? current.label, seats ?? current.seats, id, restaurantId);
-  return getTable(id, restaurantId);
+  return prisma.diningTable.update({
+    where: { id },
+    data: { label: label ?? current.label, seats: seats ?? current.seats },
+  });
 }
 
-export function deleteTable(id, restaurantId) {
-  const result = db.prepare('DELETE FROM dining_tables WHERE id = ? AND restaurant_id = ?').run(id, restaurantId);
-  return result.changes > 0;
+export async function deleteTable(id, restaurantId) {
+  const { count } = await prisma.diningTable.deleteMany({ where: { id, restaurant_id: restaurantId } });
+  return count > 0;
 }
 
-export function lockTable(id, restaurantId, note) {
-  const current = getTable(id, restaurantId);
+export async function lockTable(id, restaurantId, note) {
+  const current = await getTable(id, restaurantId);
   if (!current) return null;
   if (current.status !== 'available') {
     throw new Error(`Table ${current.label} is ${current.status}; only available tables can be locked`);
   }
-  db.prepare(
-    "UPDATE dining_tables SET status = 'locked', lock_note = ?, updated_at = datetime('now') WHERE id = ? AND restaurant_id = ?"
-  ).run(note ?? null, id, restaurantId);
-  return getTable(id, restaurantId);
+  return prisma.diningTable.update({
+    where: { id },
+    data: { status: 'locked', lock_note: note ?? null },
+  });
 }
 
-export function releaseTable(id, restaurantId) {
-  const current = getTable(id, restaurantId);
+export async function releaseTable(id, restaurantId) {
+  const current = await getTable(id, restaurantId);
   if (!current) return null;
   if (current.status !== 'locked') {
     throw new Error(`Table ${current.label} is not locked`);
   }
-  db.prepare(
-    "UPDATE dining_tables SET status = 'available', lock_note = NULL, updated_at = datetime('now') WHERE id = ? AND restaurant_id = ?"
-  ).run(id, restaurantId);
-  return getTable(id, restaurantId);
+  return prisma.diningTable.update({
+    where: { id },
+    data: { status: 'available', lock_note: null },
+  });
 }

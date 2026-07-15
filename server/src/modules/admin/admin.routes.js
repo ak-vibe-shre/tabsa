@@ -9,14 +9,14 @@ export const adminRouter = Router();
 adminRouter.get(
   '/stats',
   asyncRoute(async (req, res) => {
-    res.json(getPlatformStats());
+    res.json(await getPlatformStats());
   })
 );
 
 adminRouter.get(
   '/restaurants',
   asyncRoute(async (req, res) => {
-    res.json(listRestaurants());
+    res.json(await listRestaurants());
   })
 );
 
@@ -29,7 +29,7 @@ adminRouter.post(
       throw new HttpError(400, `business_type must be one of: ${BUSINESS_TYPE_KEYS.join(', ')}`);
     }
     try {
-      res.status(201).json(createRestaurantWithOwner({ name, username, business_type }));
+      res.status(201).json(await createRestaurantWithOwner({ name, username, business_type }));
     } catch (err) {
       throw new HttpError(409, err.message);
     }
@@ -49,7 +49,7 @@ adminRouter.patch(
     if (business_type && !BUSINESS_TYPE_KEYS.includes(business_type)) {
       throw new HttpError(400, `business_type must be one of: ${BUSINESS_TYPE_KEYS.join(', ')}`);
     }
-    const updated = updateRestaurant(Number(req.params.id), req.body);
+    const updated = await updateRestaurant(Number(req.params.id), req.body);
     if (!updated) throw new HttpError(404, 'Restaurant not found');
     res.json(updated);
   })

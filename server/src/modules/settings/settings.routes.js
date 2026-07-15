@@ -8,7 +8,7 @@ export const settingsRouter = Router();
 settingsRouter.get(
   '/',
   asyncRoute(async (req, res) => {
-    res.json(getSettings(req.user.restaurantId));
+    res.json(await getSettings(req.user.restaurantId));
   })
 );
 
@@ -16,6 +16,6 @@ settingsRouter.patch(
   '/',
   requireRestaurantRole('owner'),
   asyncRoute(async (req, res) => {
-    res.json(updateSettings(req.user.restaurantId, req.body));
+    res.json(await updateSettings(req.user.restaurantId, req.body));
   })
 );

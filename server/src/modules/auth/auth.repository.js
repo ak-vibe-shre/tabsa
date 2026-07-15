@@ -1,42 +1,46 @@
 import crypto from 'node:crypto';
 import bcrypt from 'bcrypt';
-import db from '../../db/client.js';
+import prisma from '../../db/prisma.js';
 
 export const COOKIE_NAME = 'sid';
 export const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 
-export function verifyCredentials(username, password) {
-  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+export async function verifyCredentials(username, password) {
+  const user = await prisma.user.findUnique({ where: { username } });
   if (!user) return null;
   return bcrypt.compareSync(password, user.password_hash) ? user : null;
 }
 
-export function createSession(userId) {
+export async function createSession(userId) {
   const token = crypto.randomBytes(32).toString('hex');
-  const expiresAt = new Date(Date.now() + SESSION_DURATION_MS).toISOString();
-  db.prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)').run(token, userId, expiresAt);
+  const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
+  await prisma.session.create({ data: { token, user_id: userId, expires_at: expiresAt } });
   return { token, expiresAt };
 }
 
-export function findSessionWithUser(token) {
+export async function findSessionWithUser(token) {
   if (!token) return null;
-  const row = db
-    .prepare(
-      `SELECT s.token, s.expires_at, u.id as user_id, u.username, u.role, u.restaurant_id, u.nav_visibility, r.business_type
-       FROM sessions s
-       JOIN users u ON u.id = s.user_id
-       LEFT JOIN restaurants r ON r.id = u.restaurant_id
-       WHERE s.token = ?`
-    )
-    .get(token);
-  if (!row) return null;
-  if (new Date(row.expires_at) < new Date()) {
-    deleteSession(token);
+  const session = await prisma.session.findUnique({
+    where: { token },
+    include: { user: { include: { restaurant: { select: { business_type: true } } } } },
+  });
+  if (!session) return null;
+  if (session.expires_at < new Date()) {
+    await deleteSession(token);
     return null;
   }
-  return row;
+  return {
+    token: session.token,
+    expires_at: session.expires_at,
+    user_id: session.user.id,
+    username: session.user.username,
+    role: session.user.role,
+    restaurant_id: session.user.restaurant_id,
+    nav_visibility: session.user.nav_visibility,
+    business_type: session.user.restaurant?.business_type ?? null,
+  };
 }
 
-export function deleteSession(token) {
-  db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
+export async function deleteSession(token) {
+  await prisma.session.deleteMany({ where: { token } });
 }

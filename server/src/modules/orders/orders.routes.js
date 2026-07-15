@@ -18,7 +18,7 @@ ordersRouter.get(
   '/',
   asyncRoute(async (req, res) => {
     const { status, table_id, date } = req.query;
-    res.json(listOrders(req.user.restaurantId, { status, table_id: table_id ? Number(table_id) : undefined, date }));
+    res.json(await listOrders(req.user.restaurantId, { status, table_id: table_id ? Number(table_id) : undefined, date }));
   })
 );
 
@@ -26,14 +26,14 @@ ordersRouter.post(
   '/',
   asyncRoute(async (req, res) => {
     const { table_id, order_type } = req.body;
-    res.status(201).json(createOrder(req.user.restaurantId, { table_id, order_type }));
+    res.status(201).json(await createOrder(req.user.restaurantId, { table_id, order_type }));
   })
 );
 
 ordersRouter.get(
   '/:id',
   asyncRoute(async (req, res) => {
-    const order = getOrderWithItems(Number(req.params.id), req.user.restaurantId);
+    const order = await getOrderWithItems(Number(req.params.id), req.user.restaurantId);
     if (!order) throw new HttpError(404, 'Order not found');
     res.json(order);
   })
@@ -46,41 +46,41 @@ ordersRouter.post(
     if (!product_id) throw new HttpError(400, 'product_id is required');
     res
       .status(201)
-      .json(addOrderItem(req.user.businessType, req.user.restaurantId, Number(req.params.id), { product_id, quantity, notes }));
+      .json(await addOrderItem(req.user.businessType, req.user.restaurantId, Number(req.params.id), { product_id, quantity, notes }));
   })
 );
 
 ordersRouter.patch(
   '/:id/items/:itemId',
   asyncRoute(async (req, res) => {
-    res.json(updateOrderItemQuantity(req.user.restaurantId, Number(req.params.id), Number(req.params.itemId), req.body));
+    res.json(await updateOrderItemQuantity(req.user.restaurantId, Number(req.params.id), Number(req.params.itemId), req.body));
   })
 );
 
 ordersRouter.delete(
   '/:id/items/:itemId',
   asyncRoute(async (req, res) => {
-    res.json(removeOrderItem(req.user.restaurantId, Number(req.params.id), Number(req.params.itemId)));
+    res.json(await removeOrderItem(req.user.restaurantId, Number(req.params.id), Number(req.params.itemId)));
   })
 );
 
 ordersRouter.post(
   '/:id/bill',
   asyncRoute(async (req, res) => {
-    res.json(billOrder(req.user.restaurantId, Number(req.params.id)));
+    res.json(await billOrder(req.user.restaurantId, Number(req.params.id)));
   })
 );
 
 ordersRouter.post(
   '/:id/pay',
   asyncRoute(async (req, res) => {
-    res.json(payOrder(req.user.restaurantId, Number(req.params.id), req.body));
+    res.json(await payOrder(req.user.restaurantId, Number(req.params.id), req.body));
   })
 );
 
 ordersRouter.post(
   '/:id/cancel',
   asyncRoute(async (req, res) => {
-    res.json(cancelOrder(req.user.restaurantId, Number(req.params.id)));
+    res.json(await cancelOrder(req.user.restaurantId, Number(req.params.id)));
   })
 );

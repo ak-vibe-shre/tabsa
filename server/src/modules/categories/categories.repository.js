@@ -1,30 +1,30 @@
-import db from '../../db/client.js';
+import prisma from '../../db/prisma.js';
 
-export function listCategories(restaurantId) {
-  return db.prepare('SELECT * FROM categories WHERE restaurant_id = ? ORDER BY sort_order ASC, id ASC').all(restaurantId);
+export async function listCategories(restaurantId) {
+  return prisma.category.findMany({
+    where: { restaurant_id: restaurantId },
+    orderBy: [{ sort_order: 'asc' }, { id: 'asc' }],
+  });
 }
 
-export function getCategory(id, restaurantId) {
-  return db.prepare('SELECT * FROM categories WHERE id = ? AND restaurant_id = ?').get(id, restaurantId);
+export async function getCategory(id, restaurantId) {
+  return prisma.category.findFirst({ where: { id, restaurant_id: restaurantId } });
 }
 
-export function createCategory(restaurantId, { name, sort_order = 0 }) {
-  const { lastInsertRowid } = db
-    .prepare('INSERT INTO categories (restaurant_id, name, sort_order) VALUES (?, ?, ?)')
-    .run(restaurantId, name, sort_order);
-  return getCategory(lastInsertRowid, restaurantId);
+export async function createCategory(restaurantId, { name, sort_order = 0 }) {
+  return prisma.category.create({ data: { restaurant_id: restaurantId, name, sort_order } });
 }
 
-export function updateCategory(id, restaurantId, { name, sort_order }) {
-  const current = getCategory(id, restaurantId);
+export async function updateCategory(id, restaurantId, { name, sort_order }) {
+  const current = await getCategory(id, restaurantId);
   if (!current) return null;
-  db.prepare(
-    "UPDATE categories SET name = ?, sort_order = ?, updated_at = datetime('now') WHERE id = ? AND restaurant_id = ?"
-  ).run(name ?? current.name, sort_order ?? current.sort_order, id, restaurantId);
-  return getCategory(id, restaurantId);
+  return prisma.category.update({
+    where: { id },
+    data: { name: name ?? current.name, sort_order: sort_order ?? current.sort_order },
+  });
 }
 
-export function deleteCategory(id, restaurantId) {
-  const result = db.prepare('DELETE FROM categories WHERE id = ? AND restaurant_id = ?').run(id, restaurantId);
-  return result.changes > 0;
+export async function deleteCategory(id, restaurantId) {
+  const { count } = await prisma.category.deleteMany({ where: { id, restaurant_id: restaurantId } });
+  return count > 0;
 }

@@ -17,7 +17,7 @@ productsRouter.get(
   asyncRoute(async (req, res) => {
     const { category_id, available } = req.query;
     res.json(
-      listProducts(businessTypeOf(req), req.user.restaurantId, {
+      await listProducts(businessTypeOf(req), req.user.restaurantId, {
         category_id: category_id ? Number(category_id) : undefined,
         available: available === undefined ? undefined : available === 'true',
       })
@@ -33,14 +33,14 @@ productsRouter.post(
     if (!category_id || !name || price === undefined) {
       throw new HttpError(400, 'category_id, name, and price are required');
     }
-    res.status(201).json(createProduct(businessTypeOf(req), req.user.restaurantId, req.body));
+    res.status(201).json(await createProduct(businessTypeOf(req), req.user.restaurantId, req.body));
   })
 );
 
 productsRouter.get(
   '/:id',
   asyncRoute(async (req, res) => {
-    const item = getProduct(businessTypeOf(req), Number(req.params.id), req.user.restaurantId);
+    const item = await getProduct(businessTypeOf(req), Number(req.params.id), req.user.restaurantId);
     if (!item) throw new HttpError(404, 'Product not found');
     res.json(item);
   })
@@ -50,7 +50,7 @@ productsRouter.patch(
   '/:id',
   requireManage,
   asyncRoute(async (req, res) => {
-    const updated = updateProduct(businessTypeOf(req), Number(req.params.id), req.user.restaurantId, req.body);
+    const updated = await updateProduct(businessTypeOf(req), Number(req.params.id), req.user.restaurantId, req.body);
     if (!updated) throw new HttpError(404, 'Product not found');
     res.json(updated);
   })
@@ -60,7 +60,7 @@ productsRouter.patch(
   '/:id/availability',
   requireManage,
   asyncRoute(async (req, res) => {
-    const updated = setAvailability(businessTypeOf(req), Number(req.params.id), req.user.restaurantId, Boolean(req.body.is_available));
+    const updated = await setAvailability(businessTypeOf(req), Number(req.params.id), req.user.restaurantId, Boolean(req.body.is_available));
     if (!updated) throw new HttpError(404, 'Product not found');
     res.json(updated);
   })
@@ -70,7 +70,7 @@ productsRouter.delete(
   '/:id',
   requireManage,
   asyncRoute(async (req, res) => {
-    const deleted = deleteProduct(businessTypeOf(req), Number(req.params.id), req.user.restaurantId);
+    const deleted = await deleteProduct(businessTypeOf(req), Number(req.params.id), req.user.restaurantId);
     if (!deleted) throw new HttpError(404, 'Product not found');
     res.status(204).end();
   })

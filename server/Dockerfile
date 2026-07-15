@@ -15,12 +15,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 make g+
 COPY package.json package-lock.json ./
 COPY server/package.json server/package.json
 COPY client/package.json client/package.json
+# prisma's postinstall (`prisma generate`) needs the schema present before npm ci runs.
+COPY server/prisma server/prisma
 RUN npm ci --omit=dev --workspace=server
 
 COPY server server
 
 EXPOSE 4000
-# Persist the SQLite database across container restarts/redeploys.
-VOLUME ["/app/server/data"]
 
-CMD ["node", "server/src/index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=server/prisma/schema.prisma && node server/src/index.js"]

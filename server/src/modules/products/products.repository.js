@@ -1,80 +1,70 @@
-import db from '../../db/client.js';
+import prisma from '../../db/prisma.js';
 import { getBusinessType } from '../../lib/businessTypes.js';
+import { delegateForTable } from '../../db/productDelegates.js';
 
-const CORE_COLUMNS = ['category_id', 'name', 'description', 'price', 'tax_percent', 'image_url'];
+const CORE_FIELDS = ['category_id', 'name', 'description', 'price', 'tax_percent', 'image_url'];
 
-export function listProducts(businessType, restaurantId, { category_id, available } = {}) {
+function delegateFor(businessType, client) {
   const { table } = getBusinessType(businessType);
-  let sql = `SELECT * FROM ${table} WHERE restaurant_id = ?`;
-  const params = [restaurantId];
-  if (category_id) {
-    sql += ' AND category_id = ?';
-    params.push(category_id);
-  }
-  if (available !== undefined) {
-    sql += ' AND is_available = ?';
-    params.push(available ? 1 : 0);
-  }
-  sql += ' ORDER BY name ASC';
-  return db.prepare(sql).all(...params);
+  return delegateForTable(table, client);
 }
 
-export function getProduct(businessType, id, restaurantId) {
-  const { table } = getBusinessType(businessType);
-  return db.prepare(`SELECT * FROM ${table} WHERE id = ? AND restaurant_id = ?`).get(id, restaurantId);
-}
-
-export function createProduct(businessType, restaurantId, data) {
-  const { table, productFields } = getBusinessType(businessType);
-  const verticalKeys = productFields.map((f) => f.key);
-  const columns = ['restaurant_id', ...CORE_COLUMNS, ...verticalKeys];
-  const values = columns.map((col) => {
-    if (col === 'restaurant_id') return restaurantId;
-    if (col === 'tax_percent') return data.tax_percent ?? 5;
-    if (col === 'safety_certified') return data.safety_certified ? 1 : 0;
-    return data[col] ?? null;
+export async function listProducts(businessType, restaurantId, { category_id, available } = {}, client = prisma) {
+  const delegate = delegateFor(businessType, client);
+  return delegate.findMany({
+    where: {
+      restaurant_id: restaurantId,
+      ...(category_id ? { category_id } : {}),
+      ...(available !== undefined ? { is_available: available } : {}),
+    },
+    orderBy: { name: 'asc' },
   });
-  const placeholders = columns.map(() => '?').join(', ');
-  const { lastInsertRowid } = db
-    .prepare(`INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`)
-    .run(...values);
-  return getProduct(businessType, lastInsertRowid, restaurantId);
 }
 
-export function updateProduct(businessType, id, restaurantId, data) {
-  const { table, productFields } = getBusinessType(businessType);
-  const current = getProduct(businessType, id, restaurantId);
-  if (!current) return null;
+export async function getProduct(businessType, id, restaurantId, client = prisma) {
+  const delegate = delegateFor(businessType, client);
+  return delegate.findFirst({ where: { id, restaurant_id: restaurantId } });
+}
+
+export async function createProduct(businessType, restaurantId, data, client = prisma) {
+  const delegate = delegateFor(businessType, client);
+  const { productFields } = getBusinessType(businessType);
   const verticalKeys = productFields.map((f) => f.key);
-  const editableColumns = [...CORE_COLUMNS, 'is_available', ...verticalKeys];
-  const values = editableColumns.map((col) => {
-    if (col === 'safety_certified' && data.safety_certified !== undefined) return data.safety_certified ? 1 : 0;
-    if (col === 'is_available' && data.is_available !== undefined) return data.is_available ? 1 : 0;
-    return data[col] ?? current[col];
-  });
-  const sets = editableColumns.map((col) => `${col} = ?`).join(', ');
-  db.prepare(`UPDATE ${table} SET ${sets}, updated_at = datetime('now') WHERE id = ? AND restaurant_id = ?`).run(
-    ...values,
-    id,
-    restaurantId
-  );
-  return getProduct(businessType, id, restaurantId);
+  const fields = [...CORE_FIELDS, ...verticalKeys];
+  const values = {};
+  for (const field of fields) {
+    if (field === 'tax_percent') values[field] = data.tax_percent ?? 5;
+    else if (field === 'safety_certified') values[field] = Boolean(data.safety_certified);
+    else values[field] = data[field] ?? null;
+  }
+  return delegate.create({ data: { restaurant_id: restaurantId, ...values } });
 }
 
-export function setAvailability(businessType, id, restaurantId, isAvailable) {
-  const { table } = getBusinessType(businessType);
-  const current = getProduct(businessType, id, restaurantId);
+export async function updateProduct(businessType, id, restaurantId, data, client = prisma) {
+  const delegate = delegateFor(businessType, client);
+  const current = await getProduct(businessType, id, restaurantId, client);
   if (!current) return null;
-  db.prepare(`UPDATE ${table} SET is_available = ?, updated_at = datetime('now') WHERE id = ? AND restaurant_id = ?`).run(
-    isAvailable ? 1 : 0,
-    id,
-    restaurantId
-  );
-  return getProduct(businessType, id, restaurantId);
+  const { productFields } = getBusinessType(businessType);
+  const verticalKeys = productFields.map((f) => f.key);
+  const editableFields = [...CORE_FIELDS, 'is_available', ...verticalKeys];
+  const values = {};
+  for (const field of editableFields) {
+    if (field === 'safety_certified' && data.safety_certified !== undefined) values[field] = Boolean(data.safety_certified);
+    else if (field === 'is_available' && data.is_available !== undefined) values[field] = Boolean(data.is_available);
+    else values[field] = data[field] ?? current[field];
+  }
+  return delegate.update({ where: { id }, data: values });
 }
 
-export function deleteProduct(businessType, id, restaurantId) {
-  const { table } = getBusinessType(businessType);
-  const result = db.prepare(`DELETE FROM ${table} WHERE id = ? AND restaurant_id = ?`).run(id, restaurantId);
-  return result.changes > 0;
+export async function setAvailability(businessType, id, restaurantId, isAvailable, client = prisma) {
+  const delegate = delegateFor(businessType, client);
+  const current = await getProduct(businessType, id, restaurantId, client);
+  if (!current) return null;
+  return delegate.update({ where: { id }, data: { is_available: isAvailable } });
+}
+
+export async function deleteProduct(businessType, id, restaurantId, client = prisma) {
+  const delegate = delegateFor(businessType, client);
+  const { count } = await delegate.deleteMany({ where: { id, restaurant_id: restaurantId } });
+  return count > 0;
 }

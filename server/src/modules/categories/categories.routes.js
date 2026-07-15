@@ -10,7 +10,7 @@ const requireManage = requireRestaurantRole('owner', 'manager');
 categoriesRouter.get(
   '/',
   asyncRoute(async (req, res) => {
-    res.json(listCategories(req.user.restaurantId));
+    res.json(await listCategories(req.user.restaurantId));
   })
 );
 
@@ -20,7 +20,7 @@ categoriesRouter.post(
   asyncRoute(async (req, res) => {
     const { name, sort_order } = req.body;
     if (!name) throw new HttpError(400, 'name is required');
-    res.status(201).json(createCategory(req.user.restaurantId, { name, sort_order }));
+    res.status(201).json(await createCategory(req.user.restaurantId, { name, sort_order }));
   })
 );
 
@@ -28,7 +28,7 @@ categoriesRouter.patch(
   '/:id',
   requireManage,
   asyncRoute(async (req, res) => {
-    const updated = updateCategory(Number(req.params.id), req.user.restaurantId, req.body);
+    const updated = await updateCategory(Number(req.params.id), req.user.restaurantId, req.body);
     if (!updated) throw new HttpError(404, 'Category not found');
     res.json(updated);
   })
@@ -38,7 +38,7 @@ categoriesRouter.delete(
   '/:id',
   requireManage,
   asyncRoute(async (req, res) => {
-    const deleted = deleteCategory(Number(req.params.id), req.user.restaurantId);
+    const deleted = await deleteCategory(Number(req.params.id), req.user.restaurantId);
     if (!deleted) throw new HttpError(404, 'Category not found');
     res.status(204).end();
   })

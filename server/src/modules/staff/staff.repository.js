@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import bcrypt from 'bcrypt';
-import db from '../../db/client.js';
+import prisma from '../../db/prisma.js';
 import { resolveNavVisibility } from '../../lib/navItems.js';
 
 export const STAFF_ROLES = ['manager', 'staff'];
@@ -19,41 +19,49 @@ function present(row) {
   };
 }
 
-export function listStaff(restaurantId) {
-  return db
-    .prepare(
-      "SELECT id, username, role, nav_visibility, created_at FROM users WHERE restaurant_id = ? AND role != 'owner' ORDER BY created_at ASC"
-    )
-    .all(restaurantId)
-    .map(present);
+export async function listStaff(restaurantId) {
+  const rows = await prisma.user.findMany({
+    where: { restaurant_id: restaurantId, role: { not: 'owner' } },
+    orderBy: { created_at: 'asc' },
+  });
+  return rows.map(present);
 }
 
-export function createStaff(restaurantId, { username, role, nav_visibility }) {
-  const existingUser = db.prepare('SELECT id FROM users WHERE username = ?').get(username);
+export async function createStaff(restaurantId, { username, role, nav_visibility }) {
+  const existingUser = await prisma.user.findUnique({ where: { username } });
   if (existingUser) throw new Error('That username is already taken');
 
   const password = generatePassword();
   const passwordHash = bcrypt.hashSync(password, 10);
-  const navJson = nav_visibility !== undefined ? JSON.stringify(nav_visibility) : null;
-  const { lastInsertRowid } = db
-    .prepare('INSERT INTO users (restaurant_id, username, password_hash, role, nav_visibility) VALUES (?, ?, ?, ?, ?)')
-    .run(restaurantId, username, passwordHash, role, navJson);
+  const created = await prisma.user.create({
+    data: {
+      restaurant_id: restaurantId,
+      username,
+      password_hash: passwordHash,
+      role,
+      nav_visibility: nav_visibility !== undefined ? nav_visibility : undefined,
+    },
+  });
 
-  return { ...present({ id: lastInsertRowid, username, role, nav_visibility: navJson, created_at: null }), password };
+  return { ...present(created), password };
 }
 
-export function updateStaff(id, restaurantId, { role, nav_visibility }) {
-  const current = db.prepare("SELECT * FROM users WHERE id = ? AND restaurant_id = ? AND role != 'owner'").get(id, restaurantId);
+export async function updateStaff(id, restaurantId, { role, nav_visibility }) {
+  const current = await prisma.user.findFirst({ where: { id, restaurant_id: restaurantId, role: { not: 'owner' } } });
   if (!current) return null;
 
-  const nextRole = role ?? current.role;
-  const nextNav = nav_visibility !== undefined ? JSON.stringify(nav_visibility) : current.nav_visibility;
-  db.prepare('UPDATE users SET role = ?, nav_visibility = ? WHERE id = ?').run(nextRole, nextNav, id);
+  const updated = await prisma.user.update({
+    where: { id },
+    data: {
+      role: role ?? current.role,
+      nav_visibility: nav_visibility !== undefined ? nav_visibility : current.nav_visibility,
+    },
+  });
 
-  return present(db.prepare('SELECT id, username, role, nav_visibility, created_at FROM users WHERE id = ?').get(id));
+  return present(updated);
 }
 
-export function deleteStaff(id, restaurantId) {
-  const result = db.prepare("DELETE FROM users WHERE id = ? AND restaurant_id = ? AND role != 'owner'").run(id, restaurantId);
-  return result.changes > 0;
+export async function deleteStaff(id, restaurantId) {
+  const { count } = await prisma.user.deleteMany({ where: { id, restaurant_id: restaurantId, role: { not: 'owner' } } });
+  return count > 0;
 }

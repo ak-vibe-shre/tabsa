@@ -1,5 +1,5 @@
-import './migrate.js';
-import db from './client.js';
+import './bootstrap.js';
+import prisma from './prisma.js';
 
 const categories = [
   { name: 'Starters', sort_order: 1 },
@@ -77,86 +77,88 @@ function round2(n) {
   return Math.round(n * 100) / 100;
 }
 
-function seed() {
-  db.exec(
-    'DELETE FROM stock_transactions; DELETE FROM inventory_items; DELETE FROM order_items; DELETE FROM orders; DELETE FROM dining_tables; DELETE FROM menu_items; DELETE FROM categories; DELETE FROM settings;'
-  );
+async function ensureDemoRestaurant() {
+  const existing = await prisma.restaurant.findFirst({ where: { name: 'Tabsa' } });
+  if (existing) return existing;
+  return prisma.restaurant.create({
+    data: {
+      name: 'Tabsa',
+      address: '221B Residency Road, Bengaluru',
+      phone: '+91 98765 43210',
+      enabled_modules: ['inventory', 'dashboard'],
+      subscription_plan: 'starter',
+      business_type: 'restaurant',
+    },
+  });
+}
 
-  const insertCategory = db.prepare('INSERT INTO categories (name, sort_order) VALUES (?, ?)');
-  const insertMenuItem = db.prepare(
-    'INSERT INTO menu_items (category_id, name, price, tax_percent, food_type) VALUES (?, ?, ?, ?, ?)'
-  );
-  const insertTable = db.prepare('INSERT INTO dining_tables (label, seats) VALUES (?, ?)');
-  const insertInventory = db.prepare(
-    'INSERT INTO inventory_items (name, unit, current_stock, low_stock_threshold) VALUES (?, ?, ?, ?)'
-  );
-  const insertStockTx = db.prepare(
-    'INSERT INTO stock_transactions (inventory_item_id, type, quantity, note, created_at) VALUES (?, ?, ?, ?, ?)'
-  );
+async function clearDemoData(restaurantId) {
+  await prisma.order.deleteMany({ where: { restaurant_id: restaurantId } }); // cascades order_items
+  await prisma.category.deleteMany({ where: { restaurant_id: restaurantId } }); // cascades products_restaurant
+  await prisma.diningTable.deleteMany({ where: { restaurant_id: restaurantId } });
+  await prisma.inventoryItem.deleteMany({ where: { restaurant_id: restaurantId } }); // cascades stock_transactions
+}
+
+async function seed() {
+  const restaurant = await ensureDemoRestaurant();
+  await clearDemoData(restaurant.id);
 
   const categoryIds = {};
   for (const c of categories) {
-    const { lastInsertRowid } = insertCategory.run(c.name, c.sort_order);
-    categoryIds[c.name] = lastInsertRowid;
+    const created = await prisma.category.create({
+      data: { restaurant_id: restaurant.id, name: c.name, sort_order: c.sort_order },
+    });
+    categoryIds[c.name] = created.id;
   }
 
   const allMenuItems = [];
   for (const [categoryName, items] of Object.entries(menuItemsByCategory)) {
     for (const item of items) {
-      const { lastInsertRowid } = insertMenuItem.run(
-        categoryIds[categoryName],
-        item.name,
-        item.price,
-        item.tax_percent,
-        item.food_type
-      );
-      allMenuItems.push({ id: lastInsertRowid, ...item });
+      const created = await prisma.productRestaurant.create({
+        data: {
+          restaurant_id: restaurant.id,
+          category_id: categoryIds[categoryName],
+          name: item.name,
+          price: item.price,
+          tax_percent: item.tax_percent,
+          food_type: item.food_type,
+        },
+      });
+      allMenuItems.push({ id: created.id, ...item });
     }
   }
 
   const tableIds = {};
   for (const t of tables) {
-    const { lastInsertRowid } = insertTable.run(t.label, t.seats);
-    tableIds[t.label] = lastInsertRowid;
+    const created = await prisma.diningTable.create({
+      data: { restaurant_id: restaurant.id, label: t.label, seats: t.seats },
+    });
+    tableIds[t.label] = created.id;
   }
 
-  db.prepare("UPDATE dining_tables SET status = 'locked', lock_note = ? WHERE id = ?").run(
-    'Reserved for private event',
-    tableIds['T8']
-  );
-
-  const insertSetting = db.prepare(
-    'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value'
-  );
-  insertSetting.run('restaurant_name', 'Tabsa');
-  insertSetting.run('restaurant_address', '221B Residency Road, Bengaluru');
-  insertSetting.run('restaurant_phone', '+91 98765 43210');
-  insertSetting.run('enabled_modules', JSON.stringify(['inventory', 'dashboard']));
-  insertSetting.run('subscription_plan', 'starter');
+  await prisma.diningTable.update({
+    where: { id: tableIds['T8'] },
+    data: { status: 'locked', lock_note: 'Reserved for private event' },
+  });
 
   const inventoryIds = [];
   for (const inv of inventoryItems) {
-    const { lastInsertRowid } = insertInventory.run(inv.name, inv.unit, inv.current_stock, inv.low_stock_threshold);
-    inventoryIds.push(lastInsertRowid);
-    insertStockTx.run(
-      lastInsertRowid,
-      'stock_in',
-      inv.current_stock,
-      'Initial stock',
-      new Date().toISOString()
-    );
+    const created = await prisma.inventoryItem.create({
+      data: {
+        restaurant_id: restaurant.id,
+        name: inv.name,
+        unit: inv.unit,
+        current_stock: inv.current_stock,
+        low_stock_threshold: inv.low_stock_threshold,
+      },
+    });
+    inventoryIds.push(created.id);
+    await prisma.stockTransaction.create({
+      data: { inventory_item_id: created.id, type: 'stock_in', quantity: inv.current_stock, note: 'Initial stock' },
+    });
   }
 
   // Historical paid orders across the past 7 days so the dashboard has data on first run.
-  const insertOrder = db.prepare(
-    `INSERT INTO orders (order_type, status, subtotal, tax_total, grand_total, payment_method, billed_at, paid_at, created_at, updated_at)
-     VALUES ('dine_in', 'paid', ?, ?, ?, ?, ?, ?, ?, ?)`
-  );
-  const insertOrderItem = db.prepare(
-    `INSERT INTO order_items (order_id, menu_item_id, item_name_snapshot, unit_price, tax_percent, quantity)
-     VALUES (?, ?, ?, ?, ?, ?)`
-  );
-
   const paymentMethods = ['cash', 'card', 'upi'];
   let seedValue = 42;
   function nextRandom() {
@@ -194,22 +196,35 @@ function seed() {
       const hour = 11 + Math.floor(nextRandom() * 10);
       const orderTime = new Date(day);
       orderTime.setHours(hour, Math.floor(nextRandom() * 60), 0, 0);
-      const isoTime = orderTime.toISOString();
       const paymentMethod = paymentMethods[Math.floor(nextRandom() * paymentMethods.length)];
 
-      const { lastInsertRowid: orderId } = insertOrder.run(
-        subtotal,
-        taxTotal,
-        grandTotal,
-        paymentMethod,
-        isoTime,
-        isoTime,
-        isoTime,
-        isoTime
-      );
+      const order = await prisma.order.create({
+        data: {
+          restaurant_id: restaurant.id,
+          order_type: 'dine_in',
+          status: 'paid',
+          subtotal,
+          tax_total: taxTotal,
+          grand_total: grandTotal,
+          payment_method: paymentMethod,
+          billed_at: orderTime,
+          paid_at: orderTime,
+          created_at: orderTime,
+          updated_at: orderTime,
+        },
+      });
 
       for (const { item, quantity } of chosen) {
-        insertOrderItem.run(orderId, item.id, item.name, item.price, item.tax_percent, quantity);
+        await prisma.orderItem.create({
+          data: {
+            order_id: order.id,
+            product_id: item.id,
+            item_name_snapshot: item.name,
+            unit_price: item.price,
+            tax_percent: item.tax_percent,
+            quantity,
+          },
+        });
       }
     }
   }
@@ -217,4 +232,4 @@ function seed() {
   console.log('Seed complete: categories, menu items, tables, inventory, and 7 days of order history.');
 }
 
-seed();
+await seed();

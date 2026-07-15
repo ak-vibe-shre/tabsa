@@ -11,27 +11,27 @@ function rangeFromQuery(req) {
 reportsRouter.get(
   '/summary',
   asyncRoute(async (req, res) => {
-    res.json(getSummary(req.user.restaurantId, rangeFromQuery(req)));
+    res.json(await getSummary(req.user.restaurantId, rangeFromQuery(req)));
   })
 );
 
 reportsRouter.get(
   '/sales-trend',
   asyncRoute(async (req, res) => {
-    res.json(getSalesTrend(req.user.restaurantId, rangeFromQuery(req)));
+    res.json(await getSalesTrend(req.user.restaurantId, rangeFromQuery(req)));
   })
 );
 
 reportsRouter.get(
   '/top-items',
   asyncRoute(async (req, res) => {
-    res.json(getTopItems(req.user.restaurantId, rangeFromQuery(req), req.query.limit ? Number(req.query.limit) : 10));
+    res.json(await getTopItems(req.user.restaurantId, rangeFromQuery(req), req.query.limit ? Number(req.query.limit) : 10));
   })
 );
 
 reportsRouter.get(
   '/category-revenue',
   asyncRoute(async (req, res) => {
-    res.json(getCategoryRevenue(req.user.businessType, req.user.restaurantId, rangeFromQuery(req)));
+    res.json(await getCategoryRevenue(req.user.businessType, req.user.restaurantId, rangeFromQuery(req)));
   })
 );

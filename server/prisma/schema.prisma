@@ -1,0 +1,335 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum SubscriptionPlan {
+  starter
+  growth
+  enterprise
+}
+
+enum RestaurantStatus {
+  active
+  suspended
+}
+
+enum BusinessType {
+  restaurant
+  toy_store
+  electronics_store
+  general_retail
+}
+
+enum UserRole {
+  owner
+  manager
+  staff
+  platform_admin
+}
+
+enum FoodType {
+  veg
+  non_veg
+  egg
+}
+
+enum TableStatus {
+  available
+  occupied
+  billed
+  locked
+}
+
+enum OrderType {
+  dine_in
+  takeaway
+}
+
+enum OrderStatus {
+  open
+  billed
+  paid
+  cancelled
+}
+
+enum PaymentMethod {
+  cash
+  card
+  upi
+}
+
+enum StockTxType {
+  stock_in
+  stock_out
+  adjustment
+}
+
+model Restaurant {
+  id                Int              @id @default(autoincrement())
+  name              String
+  address           String?
+  phone             String?
+  enabled_modules   Json             @default("[]")
+  subscription_plan SubscriptionPlan @default(starter)
+  status            RestaurantStatus @default(active)
+  business_type     BusinessType     @default(restaurant)
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @default(now()) @updatedAt
+
+  users                   User[]
+  categories              Category[]
+  dining_tables           DiningTable[]
+  orders                  Order[]
+  inventory_items         InventoryItem[]
+  products_restaurant     ProductRestaurant[]
+  products_toy_store      ProductToyStore[]
+  products_electronics    ProductElectronics[]
+  products_general_retail ProductGeneralRetail[]
+
+  @@map("restaurants")
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  restaurant_id  Int?
+  username       String   @unique
+  password_hash  String
+  role           UserRole @default(owner)
+  nav_visibility Json?
+  created_at     DateTime @default(now())
+
+  restaurant Restaurant? @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  sessions   Session[]
+
+  @@map("users")
+}
+
+model Session {
+  token      String   @id
+  user_id    Int
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Category {
+  id            Int      @id @default(autoincrement())
+  restaurant_id Int
+  name          String
+  sort_order    Int      @default(0)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now()) @updatedAt
+
+  restaurant              Restaurant             @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  products_restaurant     ProductRestaurant[]
+  products_toy_store      ProductToyStore[]
+  products_electronics    ProductElectronics[]
+  products_general_retail ProductGeneralRetail[]
+
+  @@map("categories")
+}
+
+model ProductRestaurant {
+  id            Int       @id @default(autoincrement())
+  restaurant_id Int
+  category_id   Int
+  name          String
+  description   String?
+  price         Float
+  tax_percent   Float     @default(5)
+  food_type     FoodType?
+  is_available  Boolean   @default(true)
+  image_url     String?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @default(now()) @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id])
+  category   Category   @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@index([category_id])
+  @@map("products_restaurant")
+}
+
+model ProductToyStore {
+  id               Int      @id @default(autoincrement())
+  restaurant_id    Int
+  category_id      Int
+  name             String
+  description      String?
+  price            Float
+  tax_percent      Float    @default(5)
+  age_range        String?
+  safety_certified Boolean  @default(false)
+  is_available     Boolean  @default(true)
+  image_url        String?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @default(now()) @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id])
+  category   Category   @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@index([category_id])
+  @@map("products_toy_store")
+}
+
+model ProductElectronics {
+  id              Int      @id @default(autoincrement())
+  restaurant_id   Int
+  category_id     Int
+  name            String
+  description     String?
+  price           Float
+  tax_percent     Float    @default(5)
+  serial_number   String?
+  warranty_months Int?
+  brand           String?
+  is_available    Boolean  @default(true)
+  image_url       String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now()) @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id])
+  category   Category   @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@index([category_id])
+  @@map("products_electronics")
+}
+
+model ProductGeneralRetail {
+  id            Int      @id @default(autoincrement())
+  restaurant_id Int
+  category_id   Int
+  name          String
+  description   String?
+  price         Float
+  tax_percent   Float    @default(5)
+  brand         String?
+  is_available  Boolean  @default(true)
+  image_url     String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now()) @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id])
+  category   Category   @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@index([category_id])
+  @@map("products_general_retail")
+}
+
+model DiningTable {
+  id               Int         @id @default(autoincrement())
+  restaurant_id    Int
+  label            String
+  seats            Int         @default(4)
+  status           TableStatus @default(available)
+  current_order_id Int?
+  lock_note        String?
+  created_at       DateTime    @default(now())
+  updated_at       DateTime    @default(now()) @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  orders     Order[]
+
+  @@map("dining_tables")
+}
+
+model Order {
+  id             Int            @id @default(autoincrement())
+  restaurant_id  Int
+  table_id       Int?
+  order_type     OrderType      @default(dine_in)
+  status         OrderStatus    @default(open)
+  subtotal       Float          @default(0)
+  tax_total      Float          @default(0)
+  grand_total    Float          @default(0)
+  payment_method PaymentMethod?
+  billed_at      DateTime?
+  paid_at        DateTime?
+  cancelled_at   DateTime?
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @default(now()) @updatedAt
+
+  restaurant  Restaurant   @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  table       DiningTable? @relation(fields: [table_id], references: [id], onDelete: SetNull)
+  order_items OrderItem[]
+
+  @@index([table_id])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                 Int      @id @default(autoincrement())
+  order_id           Int
+  product_id         Int
+  item_name_snapshot String
+  unit_price         Float
+  tax_percent        Float
+  quantity           Int      @default(1)
+  notes              String?
+  created_at         DateTime @default(now())
+  updated_at         DateTime @default(now()) @updatedAt
+
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@index([order_id])
+  @@index([product_id])
+  @@map("order_items")
+}
+
+model InventoryItem {
+  id                  Int      @id @default(autoincrement())
+  restaurant_id       Int
+  name                String
+  unit                String
+  current_stock       Float    @default(0)
+  low_stock_threshold Float    @default(0)
+  created_at          DateTime @default(now())
+  updated_at          DateTime @default(now()) @updatedAt
+
+  restaurant         Restaurant         @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  stock_transactions StockTransaction[]
+
+  @@map("inventory_items")
+}
+
+model StockTransaction {
+  id                Int         @id @default(autoincrement())
+  inventory_item_id Int
+  type              StockTxType
+  quantity          Float
+  note              String?
+  created_at        DateTime    @default(now())
+
+  inventory_item InventoryItem @relation(fields: [inventory_item_id], references: [id], onDelete: Cascade)
+
+  @@index([inventory_item_id])
+  @@map("stock_transactions")
+}
+
+model Setting {
+  key   String  @id
+  value String? @db.Text
+
+  @@map("settings")
+}
+
+model Plan {
+  key         String   @id
+  name        String
+  price_label String
+  table_limit Int?
+  features    Json     @default("[]")
+  sort_order  Int      @default(0)
+  updated_at  DateTime @default(now()) @updatedAt
+
+  @@map("plans")
+}
