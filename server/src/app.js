@@ -15,6 +15,7 @@ import { inventoryRouter } from './modules/inventory/inventory.routes.js';
 import { reportsRouter } from './modules/reports/reports.routes.js';
 import { settingsRouter } from './modules/settings/settings.routes.js';
 import { uploadsRouter } from './modules/uploads/uploads.routes.js';
+import { publicRouter } from './modules/public/public.routes.js';
 import { requireAuth, requireRole, requireRestaurantRole, requireNavAccess } from './middleware/requireAuth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use('/api/auth', authRouter);
+app.use('/api/public', publicRouter);
 
 app.use('/api/admin', requireAuth, requireRole('platform_admin'), adminRouter);
 app.use('/api/plans', requireAuth, plansRouter);

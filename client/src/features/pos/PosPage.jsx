@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { UtensilsCrossed, Store, Pencil, Trash2 } from 'lucide-react';
+import { UtensilsCrossed, Store, Pencil, Trash2, QrCode } from 'lucide-react';
 import { api } from '../../lib/apiClient.js';
 import { usePendingSet } from '../../lib/usePendingSet.js';
 import { useAuth } from '../../lib/AuthContext.jsx';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
+import { useSettings } from '../../lib/SettingsContext.jsx';
 import { useToast } from '../../components/ui/ToastContext.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Card } from '../../components/ui/Card.jsx';
@@ -15,7 +16,9 @@ import { TableGrid } from './TableGrid.jsx';
 import { TableForm } from './TableForm.jsx';
 import { OrderBuilder } from './OrderBuilder.jsx';
 import { OrderHistory } from './OrderHistory.jsx';
+import { TableRequestsModal } from './TableRequestsModal.jsx';
 import { formatCurrency } from '../../lib/format.js';
+import { printTableQr } from '../../lib/printTableQr.js';
 import './pos.css';
 
 export function PosPage() {
@@ -29,8 +32,10 @@ export function PosPage() {
   const [manageOpen, setManageOpen] = useState(false);
   const [tableFormOpen, setTableFormOpen] = useState(false);
   const [editingTable, setEditingTable] = useState(null);
+  const [requestsTable, setRequestsTable] = useState(null);
   const toast = useToast();
   const { user } = useAuth();
+  const { settings } = useSettings();
   const businessType = useCurrentBusinessType();
   const canManageTables = user?.role === 'owner' || user?.role === 'manager';
   const { isPending, withPending } = usePendingSet();
@@ -141,6 +146,14 @@ export function PosPage() {
     }
   }
 
+  async function handlePrintQr(table) {
+    try {
+      await printTableQr(table, { restaurantName: settings?.restaurant_name });
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
   async function handleDeleteTable(table) {
     if (!confirm(`Delete "${table.label}"?`)) return;
     await withPending(`table-del-${table.id}`, async () => {
@@ -204,6 +217,7 @@ History
               onSelect={handleSelectTable}
               onLock={handleLockTable}
               onRelease={handleReleaseTable}
+              onOpenRequests={setRequestsTable}
               isPending={(id) => isPending(`table-${id}`)}
             />
           )}
@@ -264,6 +278,9 @@ History
                     {table.status}
                   </Badge>
                   <div className="manage-tables-actions">
+                    <Button variant="ghost" size="sm" className="btn-icon" onClick={() => handlePrintQr(table)} aria-label="QR code">
+                      <QrCode size={14} />
+                    </Button>
                     <Button variant="ghost" size="sm" className="btn-icon" onClick={() => openEditTable(table)} aria-label="Edit">
                       <Pencil size={14} />
                     </Button>
@@ -298,6 +315,13 @@ History
           submitting={tableFormSubmitting}
         />
       </Modal>
+
+      <TableRequestsModal
+        table={requestsTable}
+        open={!!requestsTable}
+        onClose={() => setRequestsTable(null)}
+        onResolved={loadAll}
+      />
     </div>
   );
 }

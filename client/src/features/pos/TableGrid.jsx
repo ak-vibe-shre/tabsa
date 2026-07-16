@@ -12,7 +12,7 @@ const STATUS_META = {
   locked: { label: 'Locked', badge: 'neutral' },
 };
 
-export function TableGrid({ tables, onSelect, onLock, onRelease, isPending }) {
+export function TableGrid({ tables, onSelect, onLock, onRelease, onOpenRequests, isPending }) {
   const businessType = useCurrentBusinessType();
   return (
     <div className="table-grid">
@@ -32,6 +32,18 @@ export function TableGrid({ tables, onSelect, onLock, onRelease, isPending }) {
               <div className="table-card-overlay">
                 <Spinner size="md" />
               </div>
+            )}
+            {table.pending_request_count > 0 && (
+              <button
+                className="table-card-pending-badge"
+                title={`${table.pending_request_count} customer request${table.pending_request_count === 1 ? '' : 's'} waiting`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenRequests(table);
+                }}
+              >
+                {table.pending_request_count}
+              </button>
             )}
             {isAvailable && (
               <button

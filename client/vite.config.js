@@ -3,16 +3,20 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 // Vite's dev-server SPA fallback always resolves unknown paths to the root
-// index.html. Rewrite requests under /app/* (client-side React Router routes
-// with no file extension) to app/index.html so deep links keep working.
+// index.html. Rewrite requests under /app/* or /order/* (client-side routes
+// with no file extension) to that bundle's own index.html so deep links keep
+// working — /app is the staff dashboard, /order is the public QR-order page.
 function appRouterFallback() {
   return {
     name: 'app-router-fallback',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const url = req.url?.split('?')[0] ?? '';
-        if (url.startsWith('/app') && !url.slice(url.lastIndexOf('/')).includes('.')) {
-          req.url = '/app/index.html';
+        for (const prefix of ['/app', '/order']) {
+          if (url.startsWith(prefix) && !url.slice(url.lastIndexOf('/')).includes('.')) {
+            req.url = `${prefix}/index.html`;
+            break;
+          }
         }
         next();
       });
@@ -38,6 +42,7 @@ export default defineConfig({
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         app: fileURLToPath(new URL('./app/index.html', import.meta.url)),
+        order: fileURLToPath(new URL('./order/index.html', import.meta.url)),
       },
     },
   },

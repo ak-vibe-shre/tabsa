@@ -2,7 +2,12 @@ import prisma from '../../db/prisma.js';
 import { getTableLimit } from '../../lib/planLimits.js';
 
 export async function listTables(restaurantId) {
-  return prisma.diningTable.findMany({ where: { restaurant_id: restaurantId }, orderBy: { label: 'asc' } });
+  const tables = await prisma.diningTable.findMany({
+    where: { restaurant_id: restaurantId },
+    orderBy: { label: 'asc' },
+    include: { _count: { select: { table_order_requests: { where: { status: 'pending' } } } } },
+  });
+  return tables.map(({ _count, ...rest }) => ({ ...rest, pending_request_count: _count.table_order_requests }));
 }
 
 export async function getTable(id, restaurantId) {

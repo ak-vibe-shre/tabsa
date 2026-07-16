@@ -69,6 +69,12 @@ enum StockTxType {
   adjustment
 }
 
+enum RequestStatus {
+  pending
+  approved
+  rejected
+}
+
 model Restaurant {
   id                Int              @id @default(autoincrement())
   name              String
@@ -90,6 +96,7 @@ model Restaurant {
   products_toy_store      ProductToyStore[]
   products_electronics    ProductElectronics[]
   products_general_retail ProductGeneralRetail[]
+  table_order_requests    TableOrderRequest[]
 
   @@map("restaurants")
 }
@@ -232,13 +239,37 @@ model DiningTable {
   status           TableStatus @default(available)
   current_order_id Int?
   lock_note        String?
+  qr_token         String      @unique @default(cuid())
   created_at       DateTime    @default(now())
   updated_at       DateTime    @default(now()) @updatedAt
 
-  restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
-  orders     Order[]
+  restaurant            Restaurant          @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  orders                Order[]
+  table_order_requests  TableOrderRequest[]
 
   @@map("dining_tables")
+}
+
+model TableOrderRequest {
+  id                 Int           @id @default(autoincrement())
+  restaurant_id      Int
+  table_id           Int
+  product_id         Int
+  item_name_snapshot String
+  unit_price         Float
+  tax_percent        Float
+  quantity           Int           @default(1)
+  notes              String?
+  status             RequestStatus @default(pending)
+  created_at         DateTime      @default(now())
+  resolved_at        DateTime?
+
+  restaurant Restaurant  @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  table      DiningTable @relation(fields: [table_id], references: [id], onDelete: Cascade)
+
+  @@index([table_id])
+  @@index([restaurant_id, status])
+  @@map("table_order_requests")
 }
 
 model Order {
