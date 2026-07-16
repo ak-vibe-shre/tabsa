@@ -4,7 +4,7 @@ import { useToast } from '../components/ui/ToastContext.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Badge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
-import { formatCurrency } from '../lib/format.js';
+import { formatCurrency, splitGst } from '../lib/format.js';
 
 const STATUS_VARIANT = { pending: 'warning', approved: 'success', rejected: 'danger' };
 
@@ -23,6 +23,7 @@ export function CustomerOrderPage() {
   const [activeCategory, setActiveCategory] = useState(null);
   const [cart, setCart] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [requests, setRequests] = useState([]);
 
   const load = useCallback(async () => {
@@ -50,9 +51,26 @@ export function CustomerOrderPage() {
   useEffect(() => {
     if (!data || data.restaurant_suspended) return;
     refreshRequests();
-    const interval = setInterval(refreshRequests, 5000);
+    const interval = setInterval(() => {
+      load();
+      refreshRequests();
+    }, 5000);
     return () => clearInterval(interval);
-  }, [data, refreshRequests]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.restaurant_suspended, refreshRequests]);
+
+  async function handleConfirmBill() {
+    setConfirming(true);
+    try {
+      await api.post(`/public/tables/${token}/confirm-bill`, {});
+      await load();
+      toast('Bill confirmed', 'success');
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setConfirming(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -86,7 +104,66 @@ export function CustomerOrderPage() {
     );
   }
 
-  const { categories, products } = data;
+  const { categories, products, current_order } = data;
+
+  if (current_order && current_order.status === 'billed') {
+    const { cgst, sgst } = splitGst(current_order.tax_total);
+    const confirmed = Boolean(current_order.customer_confirmed_at);
+    return (
+      <div className="customer-order-shell">
+        <div className="customer-order-header">
+          <div className="customer-order-restaurant">{data.restaurant_name}</div>
+          <div className="customer-order-table">{data.table_label}</div>
+        </div>
+
+        <div className="customer-order-section-title">Your bill</div>
+        {current_order.items.map((item) => (
+          <div className="customer-order-request-row" key={item.id}>
+            <span>
+              {item.item_name_snapshot} × {item.quantity}
+            </span>
+            <span className="tabular-nums">{formatCurrency(item.unit_price * item.quantity)}</span>
+          </div>
+        ))}
+
+        <div className="customer-order-bill-totals">
+          <div className="customer-order-request-row">
+            <span>Subtotal</span>
+            <span className="tabular-nums">{formatCurrency(current_order.subtotal)}</span>
+          </div>
+          <div className="customer-order-request-row">
+            <span>CGST</span>
+            <span className="tabular-nums">{formatCurrency(cgst)}</span>
+          </div>
+          <div className="customer-order-request-row">
+            <span>SGST</span>
+            <span className="tabular-nums">{formatCurrency(sgst)}</span>
+          </div>
+          <div className="customer-order-request-row customer-order-bill-grand">
+            <span>Total</span>
+            <span className="tabular-nums">{formatCurrency(current_order.grand_total)}</span>
+          </div>
+        </div>
+
+        {confirmed ? (
+          <p className="customer-order-message customer-order-confirmed-message">
+            Bill confirmed — staff will collect payment shortly.
+          </p>
+        ) : (
+          <div className="customer-order-cart-bar">
+            <div>
+              <div className="customer-order-cart-count">Total</div>
+              <div className="tabular-nums">{formatCurrency(current_order.grand_total)}</div>
+            </div>
+            <Button loading={confirming} onClick={handleConfirmBill}>
+              Confirm bill
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   const visibleProducts = activeCategory ? products.filter((p) => p.category_id === activeCategory) : products;
 
   function updateQuantity(productId, delta) {

@@ -281,11 +281,12 @@ model Order {
   subtotal       Float          @default(0)
   tax_total      Float          @default(0)
   grand_total    Float          @default(0)
-  payment_method PaymentMethod?
-  customer_name  String?
-  customer_phone String?
-  billed_at      DateTime?
-  paid_at        DateTime?
+  payment_method    PaymentMethod?
+  customer_name     String?
+  customer_phone    String?
+  customer_confirmed_at DateTime?
+  billed_at         DateTime?
+  paid_at           DateTime?
   cancelled_at   DateTime?
   created_at     DateTime       @default(now())
   updated_at     DateTime       @default(now()) @updatedAt

@@ -4,6 +4,7 @@ import { HttpError } from '../../middleware/httpError.js';
 import { findTableByToken, createTableOrderRequest, listRecentRequestsForTable } from '../tables/tableRequests.repository.js';
 import { listCategories } from '../categories/categories.repository.js';
 import { listProducts, getProduct } from '../products/products.repository.js';
+import { getOrderWithItems, transitionOrder } from '../orders/orders.repository.js';
 
 export const publicRouter = Router();
 
@@ -30,9 +31,10 @@ publicRouter.get(
       });
     }
 
-    const [categories, products] = await Promise.all([
+    const [categories, products, current_order] = await Promise.all([
       listCategories(restaurant.id),
       listProducts(restaurant.business_type, restaurant.id, { available: true }),
+      table.current_order_id ? getOrderWithItems(table.current_order_id, restaurant.id) : null,
     ]);
 
     res.json({
@@ -43,6 +45,7 @@ publicRouter.get(
       restaurant_suspended: false,
       categories,
       products,
+      current_order,
     });
   })
 );
@@ -54,6 +57,7 @@ publicRouter.post(
     const { restaurant } = table;
     if (restaurant.status === 'suspended') throw new HttpError(400, 'This restaurant is not currently accepting orders');
     if (table.status === 'locked') throw new HttpError(400, 'This table is currently locked; please ask staff');
+    if (table.status === 'billed') throw new HttpError(400, 'This table has already been billed; please ask staff for anything else');
 
     const { product_id, quantity, notes } = req.body;
     if (!product_id || !quantity || Number(quantity) < 1) {
@@ -81,5 +85,19 @@ publicRouter.get(
   asyncRoute(async (req, res) => {
     const table = await loadTableOrThrow(req.params.token);
     res.json(await listRecentRequestsForTable(table.id));
+  })
+);
+
+publicRouter.post(
+  '/tables/:token/confirm-bill',
+  asyncRoute(async (req, res) => {
+    const table = await loadTableOrThrow(req.params.token);
+    if (!table.current_order_id) throw new HttpError(404, 'No bill to confirm for this table');
+
+    const order = await getOrderWithItems(table.current_order_id, table.restaurant_id);
+    if (!order || order.status !== 'billed') throw new HttpError(400, 'This order has not been billed yet');
+
+    await transitionOrder(order.id, { customer_confirmed_at: new Date() });
+    res.status(204).end();
   })
 );

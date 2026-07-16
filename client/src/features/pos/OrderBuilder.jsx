@@ -69,14 +69,28 @@ export function OrderBuilder({ orderId, table, categories, products, onClose, on
     }
   });
 
+  async function finishPayment(method, customerInfo, force) {
+    await pay(method, customerInfo, force);
+    toast('Payment recorded', 'success');
+    setBillModalOpen(false);
+    onSettled();
+    onClose();
+  }
+
   async function handleConfirmPayment(method, customerInfo) {
     try {
-      await pay(method, customerInfo);
-      toast('Payment recorded', 'success');
-      setBillModalOpen(false);
-      onSettled();
-      onClose();
+      await finishPayment(method, customerInfo, false);
     } catch (err) {
+      if (err.message === 'Customer has not confirmed the bill yet') {
+        if (confirm("Customer hasn't confirmed the bill on their phone yet. Mark paid anyway?")) {
+          try {
+            await finishPayment(method, customerInfo, true);
+          } catch (err2) {
+            toast(err2.message, 'error');
+          }
+        }
+        return;
+      }
       toast(err.message, 'error');
     }
   }

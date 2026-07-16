@@ -15,6 +15,7 @@ import {
   setTableStatus,
   getTableRow,
 } from './orders.repository.js';
+import { clearTableOrderRequests } from '../tables/tableRequests.repository.js';
 
 function round2(n) {
   return Math.round(n * 100) / 100;
@@ -126,12 +127,13 @@ export async function billOrder(restaurantId, orderId) {
   });
 }
 
-export async function payOrder(restaurantId, orderId, { payment_method, customer_name, customer_phone }) {
+export async function payOrder(restaurantId, orderId, { payment_method, customer_name, customer_phone, force }) {
   return prisma.$transaction(async (tx) => {
     const order = await getOrderRow(orderId, restaurantId, tx);
     if (!order) throw new HttpError(404, 'Order not found');
     if (order.status !== 'billed') throw new HttpError(400, `Order must be billed before it can be paid (currently ${order.status})`);
     if (!['cash', 'card', 'upi'].includes(payment_method)) throw new HttpError(400, 'payment_method must be cash, card, or upi');
+    if (!order.customer_confirmed_at && !force) throw new HttpError(409, 'Customer has not confirmed the bill yet');
 
     await transitionOrder(
       orderId,
@@ -144,7 +146,10 @@ export async function payOrder(restaurantId, orderId, { payment_method, customer
       },
       tx
     );
-    if (order.table_id) await setTableStatus(order.table_id, 'available', null, tx);
+    if (order.table_id) {
+      await setTableStatus(order.table_id, 'available', null, tx);
+      await clearTableOrderRequests(order.table_id, tx);
+    }
     return getOrderWithItems(orderId, restaurantId, tx);
   });
 }
@@ -156,7 +161,10 @@ export async function cancelOrder(restaurantId, orderId) {
     if (!['open', 'billed'].includes(order.status)) throw new HttpError(400, `Order is already ${order.status}`);
 
     await transitionOrder(orderId, { status: 'cancelled', cancelled_at: new Date() }, tx);
-    if (order.table_id) await setTableStatus(order.table_id, 'available', null, tx);
+    if (order.table_id) {
+      await setTableStatus(order.table_id, 'available', null, tx);
+      await clearTableOrderRequests(order.table_id, tx);
+    }
     return getOrderWithItems(orderId, restaurantId, tx);
   });
 }

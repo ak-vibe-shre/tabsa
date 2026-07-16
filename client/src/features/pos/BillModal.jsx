@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Banknote, CreditCard, Printer, FileText, Smartphone } from 'lucide-react';
 import { Modal } from '../../components/ui/Modal.jsx';
 import { Button } from '../../components/ui/Button.jsx';
+import { Badge } from '../../components/ui/Badge.jsx';
 import { Field, Input } from '../../components/ui/Field.jsx';
 import { formatCurrency, splitGst } from '../../lib/format.js';
 import { printReceipt } from '../../lib/printReceipt.js';
@@ -78,6 +79,12 @@ export function BillModal({ order, open, onClose, onConfirmPayment }) {
             <span>Total</span>
             <span className="tabular-nums">{formatCurrency(order.grand_total)}</span>
           </div>
+        </div>
+
+        <div style={{ marginTop: 'var(--space-3)' }}>
+          <Badge variant={order.customer_confirmed_at ? 'success' : 'neutral'}>
+            {order.customer_confirmed_at ? 'Customer confirmed' : 'Not yet confirmed by customer'}
+          </Badge>
         </div>
 
         <div className="form-grid" style={{ marginTop: 'var(--space-5)' }}>

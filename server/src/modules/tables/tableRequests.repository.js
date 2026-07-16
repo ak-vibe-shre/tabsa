@@ -56,3 +56,11 @@ export async function markRequestResolved(id, status, client = prisma) {
     data: { status, resolved_at: new Date() },
   });
 }
+
+// Called when a table's order closes out (paid/cancelled) and the table goes
+// back to available — wipes every request tied to that finished seating
+// (pending or resolved) so the next customer's QR scan starts with a clean
+// slate instead of seeing the previous party's history.
+export async function clearTableOrderRequests(tableId, client = prisma) {
+  await client.tableOrderRequest.deleteMany({ where: { table_id: tableId } });
+}
