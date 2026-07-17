@@ -9,6 +9,13 @@ import { Button } from '../../components/ui/Button.jsx';
 import { Modal } from '../../components/ui/Modal.jsx';
 import { Field, Input, Select } from '../../components/ui/Field.jsx';
 
+const BILLING_CYCLE_OPTIONS = [
+  { value: '', label: 'No expiry' },
+  { value: 'monthly', label: '1 month' },
+  { value: 'half_yearly', label: '6 months' },
+  { value: 'yearly', label: '1 year' },
+];
+
 export function AdminRestaurantsPage() {
   const [restaurants, setRestaurants] = useState(null);
   const [planOptions, setPlanOptions] = useState([]);
@@ -17,6 +24,7 @@ export function AdminRestaurantsPage() {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [businessTypeKey, setBusinessTypeKey] = useState('');
+  const [billingCycleKey, setBillingCycleKey] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [createdCredentials, setCreatedCredentials] = useState(null);
   const showToast = useToast();
@@ -43,10 +51,16 @@ export function AdminRestaurantsPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const created = await api.post('/admin/restaurants', { name, username, business_type: businessTypeKey });
+      const created = await api.post('/admin/restaurants', {
+        name,
+        username,
+        business_type: businessTypeKey,
+        billing_cycle: billingCycleKey || undefined,
+      });
       setCreatedCredentials(created);
       setName('');
       setUsername('');
+      setBillingCycleKey('');
       reload();
     } catch (err) {
       showToast(err.message, 'error');
@@ -79,6 +93,17 @@ export function AdminRestaurantsPage() {
       }
     })();
 
+  const handleBillingCycleChange = (restaurant, cycle) =>
+    withPending(`billing-${restaurant.id}`, async () => {
+      try {
+        await api.patch(`/admin/restaurants/${restaurant.id}`, { billing_cycle: cycle || null });
+        showToast(cycle ? `${restaurant.name} renewed (${cycle.replace('_', ' ')})` : `${restaurant.name}'s expiry cleared`, 'success');
+        reload();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    })();
+
   function closeModal() {
     setModalOpen(false);
     setCreatedCredentials(null);
@@ -103,6 +128,7 @@ export function AdminRestaurantsPage() {
               <th>Owner login</th>
               <th>Plan</th>
               <th>Status</th>
+              <th>Expiry</th>
               <th>Tables</th>
               <th>Products</th>
               <th>Orders</th>
@@ -113,6 +139,7 @@ export function AdminRestaurantsPage() {
           <tbody>
             {(restaurants ?? []).map((r) => {
               const atLimit = r.table_limit != null && r.table_count >= r.table_limit;
+              const expired = r.subscription_expires_at && new Date(r.subscription_expires_at) < new Date();
               return (
                 <tr key={r.id}>
                   <td>{r.name}</td>
@@ -135,6 +162,30 @@ export function AdminRestaurantsPage() {
                   </td>
                   <td>
                     <Badge variant={r.status === 'active' ? 'success' : 'neutral'}>{r.status}</Badge>
+                  </td>
+                  <td className="admin-table-plan-cell">
+                    <Select
+                      value={r.billing_cycle ?? ''}
+                      onChange={(e) => handleBillingCycleChange(r, e.target.value)}
+                      disabled={isPending(`billing-${r.id}`)}
+                    >
+                      {BILLING_CYCLE_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </Select>
+                    {r.subscription_expires_at && (
+                      <div style={{ marginTop: 'var(--space-1)' }}>
+                        {expired ? (
+                          <Badge variant="danger">Expired {new Date(r.subscription_expires_at).toLocaleDateString()}</Badge>
+                        ) : (
+                          <span className="admin-table-usage">
+                            until {new Date(r.subscription_expires_at).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </td>
                   <td>
                     <span className={atLimit ? 'admin-table-usage at-limit' : 'admin-table-usage'}>
@@ -190,6 +241,15 @@ export function AdminRestaurantsPage() {
             </Field>
             <Field label="Owner username">
               <Input value={username} onChange={(e) => setUsername(e.target.value)} required />
+            </Field>
+            <Field label="Billing cycle">
+              <Select value={billingCycleKey} onChange={(e) => setBillingCycleKey(e.target.value)}>
+                {BILLING_CYCLE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </Select>
             </Field>
             <Button type="submit" disabled={submitting}>
               {submitting ? 'Creating…' : 'Create restaurant'}

@@ -22,6 +22,10 @@ authRouter.post(
     const user = await verifyCredentials(username, password);
     if (!user) throw new HttpError(401, 'Invalid username or password');
 
+    if (user.role !== 'platform_admin' && user.restaurant?.subscription_expires_at && user.restaurant.subscription_expires_at < new Date()) {
+      throw new HttpError(403, 'Your subscription has expired. Please contact support to renew access.');
+    }
+
     const { token } = await createSession(user.id);
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
@@ -56,6 +60,9 @@ authRouter.get(
   asyncRoute(async (req, res) => {
     const session = await findSessionWithUser(req.cookies?.[COOKIE_NAME]);
     if (!session) throw new HttpError(401, 'Not authenticated');
+    if (session.role !== 'platform_admin' && session.subscription_expires_at && session.subscription_expires_at < new Date()) {
+      throw new HttpError(403, 'Your subscription has expired. Please contact support to renew access.');
+    }
     res.json({
       id: session.user_id,
       username: session.username,

@@ -14,13 +14,17 @@ async function loadTableOrThrow(token) {
   return table;
 }
 
+function isExpired(restaurant) {
+  return Boolean(restaurant.subscription_expires_at) && restaurant.subscription_expires_at < new Date();
+}
+
 publicRouter.get(
   '/tables/:token',
   asyncRoute(async (req, res) => {
     const table = await loadTableOrThrow(req.params.token);
     const { restaurant } = table;
 
-    if (restaurant.status === 'suspended') {
+    if (restaurant.status === 'suspended' || isExpired(restaurant)) {
       return res.json({
         restaurant_name: restaurant.name,
         table_label: table.label,
@@ -55,7 +59,9 @@ publicRouter.post(
   asyncRoute(async (req, res) => {
     const table = await loadTableOrThrow(req.params.token);
     const { restaurant } = table;
-    if (restaurant.status === 'suspended') throw new HttpError(400, 'This restaurant is not currently accepting orders');
+    if (restaurant.status === 'suspended' || isExpired(restaurant)) {
+      throw new HttpError(400, 'This restaurant is not currently accepting orders');
+    }
     if (table.status === 'locked') throw new HttpError(400, 'This table is currently locked; please ask staff');
     if (table.status === 'billed') throw new HttpError(400, 'This table has already been billed; please ask staff for anything else');
 

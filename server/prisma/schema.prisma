@@ -75,6 +75,12 @@ enum RequestStatus {
   rejected
 }
 
+enum BillingCycle {
+  monthly
+  half_yearly
+  yearly
+}
+
 model Restaurant {
   id                Int              @id @default(autoincrement())
   name              String
@@ -84,6 +90,8 @@ model Restaurant {
   subscription_plan SubscriptionPlan @default(starter)
   status            RestaurantStatus @default(active)
   business_type     BusinessType     @default(restaurant)
+  billing_cycle     BillingCycle?
+  subscription_expires_at DateTime?
   created_at        DateTime         @default(now())
   updated_at        DateTime         @default(now()) @updatedAt
 

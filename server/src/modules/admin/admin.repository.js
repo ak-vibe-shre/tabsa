@@ -8,6 +8,16 @@ function generatePassword() {
   return crypto.randomBytes(6).toString('hex');
 }
 
+const BILLING_CYCLE_MONTHS = { monthly: 1, half_yearly: 6, yearly: 12 };
+
+function computeExpiry(cycle) {
+  const months = BILLING_CYCLE_MONTHS[cycle];
+  if (!months) return null;
+  const expiry = new Date();
+  expiry.setMonth(expiry.getMonth() + months);
+  return expiry;
+}
+
 export async function listRestaurants() {
   const restaurants = await prisma.restaurant.findMany({
     include: { users: { where: { role: 'owner' }, take: 1 } },
@@ -30,6 +40,8 @@ export async function listRestaurants() {
         status: r.status,
         subscription_plan: r.subscription_plan,
         business_type: r.business_type,
+        billing_cycle: r.billing_cycle,
+        subscription_expires_at: r.subscription_expires_at,
         created_at: r.created_at,
         owner_username: r.users[0]?.username ?? null,
         product_count,
@@ -41,14 +53,21 @@ export async function listRestaurants() {
   );
 }
 
-export async function createRestaurantWithOwner({ name, username, business_type }) {
+export async function createRestaurantWithOwner({ name, username, business_type, billing_cycle }) {
   const existingUser = await prisma.user.findUnique({ where: { username } });
   if (existingUser) throw new Error('That username is already taken');
 
   const password = generatePassword();
   const passwordHash = bcrypt.hashSync(password, 10);
 
-  const restaurant = await prisma.restaurant.create({ data: { name, business_type } });
+  const restaurant = await prisma.restaurant.create({
+    data: {
+      name,
+      business_type,
+      billing_cycle: billing_cycle ?? null,
+      subscription_expires_at: billing_cycle ? computeExpiry(billing_cycle) : null,
+    },
+  });
   await prisma.user.create({
     data: { restaurant_id: restaurant.id, username, password_hash: passwordHash, role: 'owner' },
   });
@@ -86,15 +105,20 @@ export async function getPlatformStats() {
   };
 }
 
-export async function updateRestaurant(id, { status, subscription_plan, business_type }) {
+export async function updateRestaurant(id, { status, subscription_plan, business_type, billing_cycle }) {
   const current = await prisma.restaurant.findUnique({ where: { id } });
   if (!current) return null;
-  return prisma.restaurant.update({
-    where: { id },
-    data: {
-      status: status ?? current.status,
-      subscription_plan: subscription_plan ?? current.subscription_plan,
-      business_type: business_type ?? current.business_type,
-    },
-  });
+  const data = {
+    status: status ?? current.status,
+    subscription_plan: subscription_plan ?? current.subscription_plan,
+    business_type: business_type ?? current.business_type,
+  };
+  // Renewing/changing the cycle always restarts the clock from now; setting
+  // it to null explicitly clears the expiry (unlimited access). Omitting the
+  // field entirely leaves whatever cycle/expiry the restaurant already has.
+  if (billing_cycle !== undefined) {
+    data.billing_cycle = billing_cycle;
+    data.subscription_expires_at = billing_cycle ? computeExpiry(billing_cycle) : null;
+  }
+  return prisma.restaurant.update({ where: { id }, data });
 }

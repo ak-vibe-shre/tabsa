@@ -6,6 +6,9 @@ export async function requireAuth(req, res, next) {
   try {
     const session = await findSessionWithUser(req.cookies?.[COOKIE_NAME]);
     if (!session) return next(new HttpError(401, 'Not authenticated'));
+    if (session.role !== 'platform_admin' && session.subscription_expires_at && session.subscription_expires_at < new Date()) {
+      return next(new HttpError(403, 'Your subscription has expired. Please contact support to renew access.'));
+    }
     req.user = {
       id: session.user_id,
       username: session.username,
