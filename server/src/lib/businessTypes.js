@@ -20,6 +20,7 @@ export const BUSINESS_TYPES = {
     productFields: [
       { key: 'age_range', label: 'Age Range', type: 'text' },
       { key: 'safety_certified', label: 'Safety Certified', type: 'boolean' },
+      { key: 'purchase_price', label: 'Purchase price', type: 'number', ownerOnly: true },
     ],
   },
   electronics_store: {
@@ -34,6 +35,7 @@ export const BUSINESS_TYPES = {
       { key: 'serial_number', label: 'Serial Number', type: 'text' },
       { key: 'warranty_months', label: 'Warranty (months)', type: 'number' },
       { key: 'brand', label: 'Brand', type: 'text' },
+      { key: 'purchase_price', label: 'Purchase price', type: 'number', ownerOnly: true },
     ],
   },
   general_retail: {
@@ -44,7 +46,10 @@ export const BUSINESS_TYPES = {
     orderNoun: 'Sales',
     tableNoun: 'Counters',
     showSeats: false,
-    productFields: [{ key: 'brand', label: 'Brand', type: 'text' }],
+    productFields: [
+      { key: 'brand', label: 'Brand', type: 'text' },
+      { key: 'purchase_price', label: 'Purchase price', type: 'number', ownerOnly: true },
+    ],
   },
 };
 

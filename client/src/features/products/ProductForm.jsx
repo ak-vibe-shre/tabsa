@@ -5,12 +5,14 @@ import { Button } from '../../components/ui/Button.jsx';
 import { DynamicField, defaultForField } from '../../components/dynamic/DynamicField.jsx';
 import { useCurrentBusinessType } from '../../lib/BusinessTypeContext.jsx';
 import { useToast } from '../../components/ui/ToastContext.jsx';
+import { useAuth } from '../../lib/AuthContext.jsx';
 import { api } from '../../lib/apiClient.js';
 import { ProductImage } from './ProductImage.jsx';
 
 export function ProductForm({ categories, initialValues, onSubmit, onCancel, submitLabel = 'Save item' }) {
   const businessType = useCurrentBusinessType();
-  const productFields = businessType.productFields ?? [];
+  const { user } = useAuth();
+  const productFields = (businessType.productFields ?? []).filter((f) => !f.ownerOnly || user?.role === 'owner');
   const toast = useToast();
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);

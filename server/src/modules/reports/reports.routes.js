@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { asyncRoute } from '../../middleware/errorHandler.js';
-import { getSummary, getSalesTrend, getTopItems, getCategoryRevenue } from './reports.repository.js';
+import { requireRestaurantRole } from '../../middleware/requireAuth.js';
+import { getSummary, getSalesTrend, getTopItems, getCategoryRevenue, getProfitLoss } from './reports.repository.js';
 
 export const reportsRouter = Router();
 
@@ -33,5 +34,16 @@ reportsRouter.get(
   '/category-revenue',
   asyncRoute(async (req, res) => {
     res.json(await getCategoryRevenue(req.user.businessType, req.user.restaurantId, rangeFromQuery(req)));
+  })
+);
+
+// requireRestaurantRole('owner') layers a hard gate on top of this router's
+// mount-level requireNavAccess('dashboard') — manager/staff can be granted
+// 'dashboard' via nav_visibility, but must never see cost/profit data.
+reportsRouter.get(
+  '/profit-loss',
+  requireRestaurantRole('owner'),
+  asyncRoute(async (req, res) => {
+    res.json(await getProfitLoss(req.user.businessType, req.user.restaurantId, rangeFromQuery(req)));
   })
 );

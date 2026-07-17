@@ -13,14 +13,14 @@ export async function getInventoryItem(id, restaurantId, client = prisma) {
   return client.inventoryItem.findFirst({ where: { id, restaurant_id: restaurantId } });
 }
 
-export async function createInventoryItem(restaurantId, { name, unit, current_stock = 0, low_stock_threshold = 0 }) {
+export async function createInventoryItem(restaurantId, { name, unit, current_stock = 0, low_stock_threshold = 0, purchase_price }) {
   const created = await prisma.inventoryItem.create({
-    data: { restaurant_id: restaurantId, name, unit, current_stock, low_stock_threshold },
+    data: { restaurant_id: restaurantId, name, unit, current_stock, low_stock_threshold, purchase_price: purchase_price ?? null },
   });
   return getInventoryItem(created.id, restaurantId);
 }
 
-export async function updateInventoryItem(id, restaurantId, { name, unit, low_stock_threshold }) {
+export async function updateInventoryItem(id, restaurantId, { name, unit, low_stock_threshold, purchase_price }) {
   const current = await getInventoryItem(id, restaurantId);
   if (!current) return null;
   return prisma.inventoryItem.update({
@@ -29,6 +29,7 @@ export async function updateInventoryItem(id, restaurantId, { name, unit, low_st
       name: name ?? current.name,
       unit: unit ?? current.unit,
       low_stock_threshold: low_stock_threshold ?? current.low_stock_threshold,
+      purchase_price: purchase_price !== undefined ? purchase_price : current.purchase_price,
     },
   });
 }
@@ -45,7 +46,7 @@ export async function listTransactions(inventoryItemId) {
   });
 }
 
-export async function addTransaction(inventoryItemId, restaurantId, { type, quantity, note }) {
+export async function addTransaction(inventoryItemId, restaurantId, { type, quantity, note, purchase_price }) {
   return prisma.$transaction(async (tx) => {
     const item = await getInventoryItem(inventoryItemId, restaurantId, tx);
     if (!item) throw new Error('Inventory item not found');
@@ -57,10 +58,22 @@ export async function addTransaction(inventoryItemId, restaurantId, { type, quan
 
     if (nextStock < 0) throw new Error('Stock cannot go below zero');
 
+    // Only stock_in has a meaningful cost; snapshot whatever price was given
+    // (or fall back to the item's last-known price) so a later change to the
+    // item's default purchase_price doesn't retroactively rewrite this
+    // delivery's recorded cost.
+    const txPurchasePrice = type === 'stock_in' ? purchase_price ?? item.purchase_price ?? null : null;
+
     await tx.stockTransaction.create({
-      data: { inventory_item_id: inventoryItemId, type, quantity, note: note ?? null },
+      data: { inventory_item_id: inventoryItemId, type, quantity, note: note ?? null, purchase_price: txPurchasePrice },
     });
-    await tx.inventoryItem.update({ where: { id: inventoryItemId }, data: { current_stock: nextStock } });
+    await tx.inventoryItem.update({
+      where: { id: inventoryItemId },
+      data: {
+        current_stock: nextStock,
+        purchase_price: type === 'stock_in' && purchase_price !== undefined ? purchase_price : item.purchase_price,
+      },
+    });
 
     return getInventoryItem(inventoryItemId, restaurantId, tx);
   });

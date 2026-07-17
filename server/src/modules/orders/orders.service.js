@@ -79,6 +79,7 @@ export async function addOrderItem(businessType, restaurantId, orderId, { produc
           item_name_snapshot: product.name,
           unit_price: product.price,
           tax_percent: product.tax_percent,
+          purchase_price_snapshot: product.purchase_price ?? null,
           quantity,
           notes,
         },

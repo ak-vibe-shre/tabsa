@@ -17,6 +17,9 @@ import { RequireAuth, RequireRole } from './lib/RequireAuth.jsx';
 const DashboardPage = lazy(() =>
   import('./features/dashboard/DashboardPage.jsx').then((m) => ({ default: m.DashboardPage }))
 );
+const ProfitLossPage = lazy(() =>
+  import('./features/profit-loss/ProfitLossPage.jsx').then((m) => ({ default: m.ProfitLossPage }))
+);
 
 export default function App() {
   return (
@@ -48,6 +51,14 @@ export default function App() {
 
           <Route element={<RequireRole roles={['owner']} redirectTo="/orders" />}>
             <Route path="/settings" element={<SettingsPage />} />
+            <Route
+              path="/profit-loss"
+              element={
+                <Suspense fallback={null}>
+                  <ProfitLossPage />
+                </Suspense>
+              }
+            />
           </Route>
         </Route>
 

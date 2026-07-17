@@ -83,11 +83,20 @@ export async function findOrderItemByProduct(orderId, productId, client = prisma
 
 export async function insertOrderItem(
   orderId,
-  { product_id, item_name_snapshot, unit_price, tax_percent, quantity, notes },
+  { product_id, item_name_snapshot, unit_price, tax_percent, purchase_price_snapshot, quantity, notes },
   client = prisma
 ) {
   return client.orderItem.create({
-    data: { order_id: orderId, product_id, item_name_snapshot, unit_price, tax_percent, quantity, notes: notes ?? null },
+    data: {
+      order_id: orderId,
+      product_id,
+      item_name_snapshot,
+      unit_price,
+      tax_percent,
+      purchase_price_snapshot: purchase_price_snapshot ?? null,
+      quantity,
+      notes: notes ?? null,
+    },
   });
 }
 

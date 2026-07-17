@@ -11,8 +11,14 @@ import {
   payOrder,
   cancelOrder,
 } from './orders.service.js';
+import { stripIfNotOwner } from '../../lib/ownerOnly.js';
 
 export const ordersRouter = Router();
+
+function sanitizeOrder(req, order) {
+  if (!order || req.user.role === 'owner') return order;
+  return { ...order, items: stripIfNotOwner(order.items, req.user.role, ['purchase_price_snapshot']) };
+}
 
 ordersRouter.get(
   '/',
@@ -44,7 +50,7 @@ ordersRouter.get(
   asyncRoute(async (req, res) => {
     const order = await getOrderWithItems(Number(req.params.id), req.user.restaurantId);
     if (!order) throw new HttpError(404, 'Order not found');
-    res.json(order);
+    res.json(sanitizeOrder(req, order));
   })
 );
 
@@ -55,41 +61,41 @@ ordersRouter.post(
     if (!product_id) throw new HttpError(400, 'product_id is required');
     res
       .status(201)
-      .json(await addOrderItem(req.user.businessType, req.user.restaurantId, Number(req.params.id), { product_id, quantity, notes }));
+      .json(sanitizeOrder(req, await addOrderItem(req.user.businessType, req.user.restaurantId, Number(req.params.id), { product_id, quantity, notes })));
   })
 );
 
 ordersRouter.patch(
   '/:id/items/:itemId',
   asyncRoute(async (req, res) => {
-    res.json(await updateOrderItemQuantity(req.user.restaurantId, Number(req.params.id), Number(req.params.itemId), req.body));
+    res.json(sanitizeOrder(req, await updateOrderItemQuantity(req.user.restaurantId, Number(req.params.id), Number(req.params.itemId), req.body)));
   })
 );
 
 ordersRouter.delete(
   '/:id/items/:itemId',
   asyncRoute(async (req, res) => {
-    res.json(await removeOrderItem(req.user.restaurantId, Number(req.params.id), Number(req.params.itemId)));
+    res.json(sanitizeOrder(req, await removeOrderItem(req.user.restaurantId, Number(req.params.id), Number(req.params.itemId))));
   })
 );
 
 ordersRouter.post(
   '/:id/bill',
   asyncRoute(async (req, res) => {
-    res.json(await billOrder(req.user.restaurantId, Number(req.params.id)));
+    res.json(sanitizeOrder(req, await billOrder(req.user.restaurantId, Number(req.params.id))));
   })
 );
 
 ordersRouter.post(
   '/:id/pay',
   asyncRoute(async (req, res) => {
-    res.json(await payOrder(req.user.restaurantId, Number(req.params.id), req.body));
+    res.json(sanitizeOrder(req, await payOrder(req.user.restaurantId, Number(req.params.id), req.body)));
   })
 );
 
 ordersRouter.post(
   '/:id/cancel',
   asyncRoute(async (req, res) => {
-    res.json(await cancelOrder(req.user.restaurantId, Number(req.params.id)));
+    res.json(sanitizeOrder(req, await cancelOrder(req.user.restaurantId, Number(req.params.id))));
   })
 );

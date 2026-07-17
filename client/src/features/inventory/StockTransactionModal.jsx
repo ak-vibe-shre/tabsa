@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Field, Input, Select, Textarea } from '../../components/ui/Field.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { formatDateShort, formatTime } from '../../lib/format.js';
+import { useAuth } from '../../lib/AuthContext.jsx';
 
 const TYPE_LABELS = {
   stock_in: 'Stock in',
@@ -10,16 +11,25 @@ const TYPE_LABELS = {
 };
 
 export function StockTransactionModal({ item, transactions, onSubmit, onCancel }) {
+  const { user } = useAuth();
+  const isOwner = user?.role === 'owner';
   const [type, setType] = useState('stock_in');
   const [quantity, setQuantity] = useState('');
   const [note, setNote] = useState('');
+  const [purchasePrice, setPurchasePrice] = useState('');
 
   function handleSubmit(e) {
     e.preventDefault();
     if (quantity === '' || Number(quantity) < 0) return;
-    onSubmit({ type, quantity: Number(quantity), note: note || undefined });
+    onSubmit({
+      type,
+      quantity: Number(quantity),
+      note: note || undefined,
+      purchase_price: type === 'stock_in' && purchasePrice !== '' ? Number(purchasePrice) : undefined,
+    });
     setQuantity('');
     setNote('');
+    setPurchasePrice('');
   }
 
   return (
@@ -41,6 +51,18 @@ export function StockTransactionModal({ item, transactions, onSubmit, onCancel }
           <Field label={type === 'adjustment' ? `New quantity (${item.unit})` : `Quantity (${item.unit})`}>
             <Input type="number" min="0" step="0.01" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
           </Field>
+          {isOwner && type === 'stock_in' && (
+            <Field label="Purchase price per unit (₹, optional)">
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={purchasePrice}
+                onChange={(e) => setPurchasePrice(e.target.value)}
+                placeholder={item.purchase_price != null ? String(item.purchase_price) : ''}
+              />
+            </Field>
+          )}
           <div className="form-grid-full">
             <Field label="Note (optional)">
               <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. weekly supplier delivery" />

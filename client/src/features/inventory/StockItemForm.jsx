@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { Field, Input } from '../../components/ui/Field.jsx';
 import { Button } from '../../components/ui/Button.jsx';
+import { useAuth } from '../../lib/AuthContext.jsx';
 
 export function StockItemForm({ initialValues, onSubmit, onCancel, submitLabel = 'Save' }) {
+  const { user } = useAuth();
+  const isOwner = user?.role === 'owner';
   const [form, setForm] = useState({
     name: initialValues?.name ?? '',
     unit: initialValues?.unit ?? 'kg',
     current_stock: initialValues?.current_stock ?? 0,
     low_stock_threshold: initialValues?.low_stock_threshold ?? 0,
+    purchase_price: initialValues?.purchase_price ?? '',
   });
   const isEditing = !!initialValues;
 
@@ -21,6 +25,7 @@ export function StockItemForm({ initialValues, onSubmit, onCancel, submitLabel =
       ...form,
       current_stock: Number(form.current_stock),
       low_stock_threshold: Number(form.low_stock_threshold),
+      purchase_price: form.purchase_price === '' ? undefined : Number(form.purchase_price),
     });
   }
 
@@ -54,6 +59,17 @@ export function StockItemForm({ initialValues, onSubmit, onCancel, submitLabel =
               value={form.current_stock}
               onChange={(e) => update('current_stock', e.target.value)}
               required
+            />
+          </Field>
+        )}
+        {isOwner && (
+          <Field label="Purchase price per unit (₹, optional)">
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.purchase_price}
+              onChange={(e) => update('purchase_price', e.target.value)}
             />
           </Field>
         )}

@@ -70,6 +70,40 @@ export async function getTopItems(restaurantId, range, limit = 10) {
     .slice(0, limit);
 }
 
+export async function getProfitLoss(businessType, restaurantId, range) {
+  const { from, to } = normalizeRange(range);
+  const { gte, lt } = dayRange(from, to);
+
+  const orders = await prisma.order.findMany({
+    where: { restaurant_id: restaurantId, status: 'paid', paid_at: { gte, lt } },
+    select: { grand_total: true },
+  });
+  const revenue = round2(orders.reduce((sum, o) => sum + o.grand_total, 0));
+
+  let cost;
+  let cost_label;
+  if (businessType === 'restaurant') {
+    // No recipe/BOM system links a dish to the ingredients it consumes, so
+    // per-order COGS isn't computable here — the honest number is cash spent
+    // restocking inventory in this period, not a per-dish margin.
+    cost_label = 'Inventory purchases';
+    const stockIns = await prisma.stockTransaction.findMany({
+      where: { type: 'stock_in', created_at: { gte, lt }, inventory_item: { restaurant_id: restaurantId } },
+      select: { quantity: true, purchase_price: true },
+    });
+    cost = round2(stockIns.reduce((sum, t) => sum + (t.purchase_price ?? 0) * t.quantity, 0));
+  } else {
+    cost_label = 'Cost of goods sold';
+    const items = await prisma.orderItem.findMany({
+      where: { order: { restaurant_id: restaurantId, status: 'paid', paid_at: { gte, lt } } },
+      select: { purchase_price_snapshot: true, quantity: true },
+    });
+    cost = round2(items.reduce((sum, i) => sum + (i.purchase_price_snapshot ?? 0) * i.quantity, 0));
+  }
+
+  return { from, to, revenue, cost, cost_label, gross_profit: round2(revenue - cost) };
+}
+
 export async function getCategoryRevenue(businessType, restaurantId, range) {
   const { table } = getBusinessType(businessType);
   const { from, to } = normalizeRange(range);

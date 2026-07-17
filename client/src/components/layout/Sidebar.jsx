@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, UtensilsCrossed, ClipboardList, Package, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, UtensilsCrossed, ClipboardList, Package, TrendingUp, Settings, LogOut } from 'lucide-react';
 import { Badge } from '../ui/Badge.jsx';
 import { Modal } from '../ui/Modal.jsx';
 import { Button } from '../ui/Button.jsx';
@@ -17,6 +17,7 @@ export function Sidebar({ lowStockCount = 0, enabledModules }) {
     { to: '/orders', icon: UtensilsCrossed, label: businessType.orderNoun, module: null, key: 'orders', togglable: false, roles: ['owner', 'manager', 'staff'] },
     { to: '/products', icon: ClipboardList, label: businessType.productNoun.plural, module: null, key: 'products', togglable: true, roles: ['owner', 'manager'] },
     { to: '/inventory', icon: Package, label: 'Inventory', module: 'inventory', key: 'inventory', togglable: true, roles: ['owner', 'manager'] },
+    { to: '/profit-loss', icon: TrendingUp, label: 'Profit & Loss', module: null, key: 'profit-loss', togglable: false, roles: ['owner'] },
     { to: '/settings', icon: Settings, label: 'Settings', module: null, key: 'settings', togglable: false, roles: ['owner'] },
   ];
 
